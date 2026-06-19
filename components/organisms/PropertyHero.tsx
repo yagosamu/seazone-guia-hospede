@@ -1,7 +1,5 @@
 import Image from 'next/image'
-import { Clock3, KeyRound, LogIn, LogOut } from 'lucide-react'
 import type { Property } from '@/db/schema'
-import { QuickStatCard } from '@/components/molecules/QuickStatCard'
 
 const ACCESS_LABELS: Record<string, string> = {
   smart_lock: 'Self check-in',
@@ -22,25 +20,95 @@ export function PropertyHero({ property }: PropertyHeroProps) {
     : (ACCESS_LABELS[property.operational.property_access_type] ?? 'Acesso ao imóvel')
 
   return (
-    <section className="space-y-4">
-      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-muted md:aspect-[21/9]">
+    <section className="relative w-full">
+      <div className="relative h-[60vh] min-h-[420px] w-full overflow-hidden md:h-[72vh] md:min-h-[520px]">
         {image ? (
-          <Image src={image} alt={property.name} fill priority className="object-cover" sizes="(max-width: 1024px) 100vw, 1024px" />
+          <Image
+            src={image}
+            alt={property.name}
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 space-y-1 p-5 text-white md:p-8">
-          <p className="text-sm font-medium">{property.property_type}</p>
-          <h1 className="text-2xl font-semibold md:text-4xl">{property.name}</h1>
-          <p className="text-sm text-white/85 md:text-base">
-            {property.address.neighborhood}, {property.address.city} — {property.address.state}
-          </p>
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to bottom, rgba(15,76,129,0.15) 0%, rgba(15,76,129,0.05) 35%, rgba(15,76,129,0.85) 100%)',
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0">
+          <div className="mx-auto max-w-6xl px-6 pb-10 md:px-10 md:pb-16">
+            <div className="max-w-3xl text-[#FAFAF7]">
+              <div className="mb-3 flex items-center gap-3">
+                <span
+                  className="text-[11px] font-semibold tracking-[0.22em] uppercase"
+                  style={{ color: '#FF6B5B' }}
+                >
+                  Bem-vindo a
+                </span>
+                <span className="h-px w-8" style={{ background: '#FF6B5B' }} aria-hidden="true" />
+                <span className="text-[11px] font-medium tracking-[0.12em] uppercase opacity-80">
+                  {property.property_type}
+                </span>
+              </div>
+              <h1 className="text-3xl leading-[1.1] font-bold tracking-tight md:text-5xl lg:text-6xl">
+                {property.name}
+              </h1>
+              <div
+                className="mt-5 mb-4 h-[2px] w-12"
+                style={{ background: '#FF6B5B' }}
+                aria-hidden="true"
+              />
+              <p className="text-sm md:text-base">
+                <span className="opacity-90">{property.address.neighborhood}</span>
+                <span className="mx-2 opacity-50">·</span>
+                <span className="opacity-90">{property.address.city}</span>
+                <span className="mx-2 opacity-50">·</span>
+                <span className="opacity-90">{property.address.state}</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <QuickStatCard icon={LogIn} label="Check-in" value={property.rules.check_in_time} />
-        <QuickStatCard icon={LogOut} label="Check-out" value={property.rules.check_out_time} />
-        <QuickStatCard icon={property.operational.is_self_checkin ? KeyRound : Clock3} label="Acesso" value={access} />
+
+      <div className="border-border bg-background border-b">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-0 px-6 md:grid-cols-3 md:px-10">
+          <HeroStat label="Check-in" value={property.rules.check_in_time} />
+          <HeroStat label="Check-out" value={property.rules.check_out_time} divider />
+          <HeroStat label="Acesso" value={access} divider />
+        </div>
       </div>
     </section>
+  )
+}
+
+function HeroStat({
+  label,
+  value,
+  divider = false,
+}: {
+  label: string
+  value: string
+  divider?: boolean
+}) {
+  return (
+    <div
+      className={`flex flex-col gap-1 py-6 md:py-7 ${
+        divider ? 'border-border border-t md:border-t-0 md:border-l md:pl-8' : ''
+      } md:pr-8`}
+    >
+      <span className="text-muted-foreground text-[10px] font-semibold tracking-[0.2em] uppercase">
+        {label}
+      </span>
+      <span
+        className="nums-tabular text-2xl leading-tight font-bold tracking-tight md:text-3xl"
+        style={{ color: 'var(--seazone-blue)' }}
+      >
+        {value}
+      </span>
+    </div>
   )
 }

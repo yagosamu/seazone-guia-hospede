@@ -1,6 +1,6 @@
 import { Bath, BedDouble, Home, Users } from 'lucide-react'
 import type { Property } from '@/db/schema'
-import { InfoRow } from '@/components/atoms/InfoRow'
+import { SectionHeader } from '@/components/atoms/SectionHeader'
 import { AmenityChip } from '@/components/molecules/AmenityChip'
 
 type PropertyOverviewProps = {
@@ -13,23 +13,64 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
     .map(([key]) => key)
 
   return (
-    <section className="space-y-5">
-      <div>
-        <h2 className="text-xl font-semibold md:text-2xl">Sobre o imóvel</h2>
-        <p className="mt-1 text-muted-foreground">Tudo o que você precisa para uma estadia confortável.</p>
+    <section className="space-y-7">
+      <SectionHeader
+        number="01"
+        eyebrow="Sobre o imóvel"
+        title={`${property.property_type} de ${property.bedroom_quantity} ${
+          property.bedroom_quantity === 1 ? 'quarto' : 'quartos'
+        } para até ${property.guest_capacity} ${
+          property.guest_capacity === 1 ? 'hóspede' : 'hóspedes'
+        }`}
+      />
+
+      <div className="text-muted-foreground flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium">
+        <Stat icon={<Home className="h-4 w-4" aria-hidden="true" />}>
+          {property.property_type}
+        </Stat>
+        <Dot />
+        <Stat icon={<BedDouble className="h-4 w-4" aria-hidden="true" />}>
+          {property.bedroom_quantity} {property.bedroom_quantity === 1 ? 'quarto' : 'quartos'}
+        </Stat>
+        <Dot />
+        <Stat icon={<Bath className="h-4 w-4" aria-hidden="true" />}>
+          {property.bathroom_quantity}{' '}
+          {property.bathroom_quantity === 1 ? 'banheiro' : 'banheiros'}
+        </Stat>
+        <Dot />
+        <Stat icon={<Users className="h-4 w-4" aria-hidden="true" />}>
+          até {property.guest_capacity}{' '}
+          {property.guest_capacity === 1 ? 'hóspede' : 'hóspedes'}
+        </Stat>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <InfoRow icon={Home} label="Tipo" value={property.property_type} />
-        <InfoRow icon={BedDouble} label="Quartos" value={property.bedroom_quantity} />
-        <InfoRow icon={Bath} label="Banheiros" value={property.bathroom_quantity} />
-        <InfoRow icon={Users} label="Hóspedes" value={property.guest_capacity} />
-      </div>
+
       <div className="space-y-3">
-        <h3 className="font-semibold">Amenidades</h3>
+        <h3 className="text-muted-foreground text-[10px] font-semibold tracking-[0.2em] uppercase">
+          Amenidades
+        </h3>
         <div className="flex flex-wrap gap-2">
-          {amenities.map((amenity) => <AmenityChip key={amenity} amenityKey={amenity} />)}
+          {amenities.map((amenity) => (
+            <AmenityChip key={amenity} amenityKey={amenity} />
+          ))}
         </div>
       </div>
     </section>
+  )
+}
+
+function Stat({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span style={{ color: 'var(--seazone-blue)' }}>{icon}</span>
+      {children}
+    </span>
+  )
+}
+
+function Dot() {
+  return (
+    <span className="text-muted-foreground/40 hidden md:inline" aria-hidden="true">
+      ·
+    </span>
   )
 }

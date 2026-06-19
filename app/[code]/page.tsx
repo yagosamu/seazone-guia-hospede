@@ -29,12 +29,39 @@ export default async function PropertyPage({ params }: PageProps) {
   if (!property) notFound()
 
   return (
-    <main className="mx-auto max-w-5xl space-y-8 px-4 py-6 md:space-y-12 md:py-10">
+    <main className="flex flex-col">
       <PropertyHero property={property} />
-      <PropertyOverview property={property} />
-      <AccessSection property={property} />
-      <RulesSection property={property} />
-      <ContactSection property={property} />
+
+      <SectionBand tone="paper">
+        <PropertyOverview property={property} />
+      </SectionBand>
+
+      <SectionBand tone="sky">
+        <AccessSection property={property} />
+      </SectionBand>
+
+      <SectionBand tone="paper">
+        <RulesSection property={property} />
+      </SectionBand>
+
+      <SectionBand tone="sky">
+        <ContactSection property={property} />
+      </SectionBand>
     </main>
+  )
+}
+
+function SectionBand({
+  tone,
+  children,
+}: {
+  tone: 'paper' | 'sky'
+  children: React.ReactNode
+}) {
+  const bg = tone === 'sky' ? 'var(--seazone-sky)' : 'var(--background)'
+  return (
+    <section className="w-full" style={{ background: bg }}>
+      <div className="mx-auto w-full max-w-6xl px-6 py-14 md:px-10 md:py-20">{children}</div>
+    </section>
   )
 }
