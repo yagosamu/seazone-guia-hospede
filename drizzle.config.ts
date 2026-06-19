@@ -1,10 +1,18 @@
-import type { Config } from 'drizzle-kit'
+import { config } from 'dotenv'
+import { defineConfig } from 'drizzle-kit'
 
-export default {
+config({ path: '.env.local' })
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is required — set it in .env.local')
+}
+
+export default defineConfig({
   schema: './db/schema.ts',
   out: './db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL!,
+    url: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
   },
-} satisfies Config
+})
