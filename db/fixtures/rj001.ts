@@ -1,0 +1,53 @@
+import type { NewProperty } from '../schema'
+
+export const RJ001: NewProperty = {
+  code: 'RJ001',
+  name: 'Apartamento Charmoso Ipanema',
+  property_type: 'Apartamento',
+  bedroom_quantity: 2,
+  bathroom_quantity: 2,
+  guest_capacity: 4,
+  address: {
+    street: 'Rua Vinícius de Moraes',
+    number: '100',
+    complement: 'Apto 802',
+    neighborhood: 'Ipanema',
+    city: 'Rio de Janeiro',
+    state: 'RJ',
+    postal_code: '22411-010',
+  },
+  operational: {
+    wifi_network: 'SeaHome_RJ001',
+    wifi_password: 'ipanema@2024',
+    is_self_checkin: false,
+    property_access_type: 'reception',
+    property_access_instructions:
+      'Identifique-se na portaria 24h. O porteiro entregará as chaves após conferir documento e código da reserva.',
+    property_password: null,
+    has_parking_spot: true,
+    parking_spot_identifier: 'Vaga 18 — subsolo',
+    parking_spot_instructions: 'Manobrista 24h disponível na entrada principal',
+  },
+  rules: {
+    check_in_time: '15:00',
+    check_out_time: '11:00',
+    allow_pet: true,
+    smoking_permitted: false,
+    suitable_for_children: true,
+    suitable_for_babies: true,
+    events_permitted: false,
+  },
+  amenities: {
+    wifi: true,
+    tv: true,
+    air_conditioning: true,
+    kitchen: true,
+    washing_machine: true,
+    elevator: true,
+    balcony: true,
+    gym: true,
+    doorman_24h: true,
+  },
+  images: ['https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800'],
+  host: { name: 'Rafael Mendes', phone: '+5521998887766' },
+}

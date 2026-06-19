@@ -1,0 +1,55 @@
+import type { NewProperty } from '../schema'
+
+export const BAL001: NewProperty = {
+  code: 'BAL001',
+  name: 'Cobertura Vista-Mar Balneário Camboriú',
+  property_type: 'Apartamento',
+  bedroom_quantity: 2,
+  bathroom_quantity: 2,
+  guest_capacity: 4,
+  address: {
+    street: 'Av. Atlântica',
+    number: '4500',
+    complement: 'Apto 1502',
+    neighborhood: 'Centro',
+    city: 'Balneário Camboriú',
+    state: 'SC',
+    postal_code: '88330-001',
+  },
+  operational: {
+    wifi_network: 'SeaHome_BAL001',
+    wifi_password: 'camboriu@2024',
+    is_self_checkin: true,
+    property_access_type: 'smart_lock',
+    property_access_instructions:
+      'Use o código 7821 na fechadura digital. O elevador requer chave-cartão entregue na portaria.',
+    property_password: '7821',
+    has_parking_spot: true,
+    parking_spot_identifier: 'Vaga 47 — térreo G2',
+    parking_spot_instructions:
+      'Acesso pelo portão da Rua 2500, controle remoto na chaveira do apartamento',
+  },
+  rules: {
+    check_in_time: '15:00',
+    check_out_time: '11:00',
+    allow_pet: false,
+    smoking_permitted: false,
+    suitable_for_children: true,
+    suitable_for_babies: true,
+    events_permitted: false,
+  },
+  amenities: {
+    wifi: true,
+    tv: true,
+    air_conditioning: true,
+    kitchen: true,
+    washing_machine: true,
+    elevator: true,
+    balcony: true,
+    pool: true,
+    gym: true,
+    sea_view: true,
+  },
+  images: ['https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=800'],
+  host: { name: 'Mariana Schmitt', phone: '+5547998765432' },
+}
