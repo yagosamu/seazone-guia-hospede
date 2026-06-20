@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { anthropic } from '@ai-sdk/anthropic'
 import {
   convertToModelMessages,
+  smoothStream,
   streamText,
   type UIMessage,
 } from 'ai'
@@ -45,6 +46,7 @@ export async function POST(request: Request) {
       messages: await convertToModelMessages(parsed.data.messages as UIMessage[]),
       temperature: 0.3,
       maxOutputTokens: 600,
+      experimental_transform: smoothStream({ delayInMs: 18, chunking: 'word' }),
     })
 
     // ai@6.0.208 exposes the UI-message SSE adapter on StreamTextResult itself.

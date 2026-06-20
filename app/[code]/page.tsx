@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AccessSection } from '@/components/organisms/AccessSection'
+import { ChatWidget } from '@/components/organisms/ChatWidget'
 import { ContactSection } from '@/components/organisms/ContactSection'
 import { NeighborhoodLoader } from '@/components/organisms/NeighborhoodLoader'
 import { NeighborhoodSection } from '@/components/organisms/NeighborhoodSection'
@@ -59,6 +60,12 @@ export default async function PropertyPage({ params }: PageProps) {
       <SectionBand tone="paper">
         <ContactSection property={property} sectionNumber="05" />
       </SectionBand>
+
+      <ChatWidget
+        code={property.code}
+        propertyName={property.name}
+        hostFirstName={property.host.name.split(' ')[0] ?? property.host.name}
+      />
     </main>
   )
 }
