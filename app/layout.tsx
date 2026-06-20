@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Seazone — Guia Digital do Hóspede',
+  title: 'Seazone · Guia Digital do Hóspede',
   description: 'Guia personalizado para hóspedes Seazone',
 }
 

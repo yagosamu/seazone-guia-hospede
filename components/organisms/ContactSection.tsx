@@ -5,16 +5,17 @@ import { formatAddress, googleMapsUrl, whatsappUrl } from '@/lib/format'
 
 type ContactSectionProps = {
   property: Property
+  sectionNumber?: string
 }
 
-export function ContactSection({ property }: ContactSectionProps) {
+export function ContactSection({ property, sectionNumber = '04' }: ContactSectionProps) {
   const { host, address } = property
   const initials = getInitials(host.name)
 
   return (
     <section className="space-y-7 pb-12">
       <SectionHeader
-        number="04"
+        number={sectionNumber}
         eyebrow="Contato e endereço"
         title="Conte com seu anfitrião"
         description="Qualquer dúvida durante a estadia, fale direto com quem cuida do imóvel."
@@ -57,7 +58,7 @@ export function ContactSection({ property }: ContactSectionProps) {
           <address className="text-foreground space-y-0.5 text-[15px] leading-relaxed not-italic">
             <p className="font-semibold">
               {address.street}, {address.number}
-              {address.complement ? ` — ${address.complement}` : ''}
+              {address.complement ? `, ${address.complement}` : ''}
             </p>
             <p className="text-muted-foreground">
               {address.neighborhood} · {address.city} / {address.state}

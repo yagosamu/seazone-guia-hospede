@@ -25,7 +25,7 @@ export const RJ001: NewProperty = {
       'Identifique-se na portaria 24h. O porteiro entregará as chaves após conferir documento e código da reserva.',
     property_password: null,
     has_parking_spot: true,
-    parking_spot_identifier: 'Vaga 18 — subsolo',
+    parking_spot_identifier: 'Vaga 18, subsolo',
     parking_spot_instructions: 'Manobrista 24h disponível na entrada principal',
   },
   rules: {

@@ -11,9 +11,10 @@ const ACCESS_LABELS: Record<string, string> = {
 
 type PropertyHeroProps = {
   property: Property
+  welcomeMessage?: string | null
 }
 
-export function PropertyHero({ property }: PropertyHeroProps) {
+export function PropertyHero({ property, welcomeMessage }: PropertyHeroProps) {
   const image = property.images[0]
   const access = property.operational.is_self_checkin
     ? 'Self check-in'
@@ -33,24 +34,33 @@ export function PropertyHero({ property }: PropertyHeroProps) {
           />
         ) : null}
         <div
-          className="absolute inset-0"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'linear-gradient(to bottom, rgba(15,76,129,0.15) 0%, rgba(15,76,129,0.05) 35%, rgba(15,76,129,0.85) 100%)',
+              'radial-gradient(ellipse 100% 75% at 50% 50%, transparent 35%, rgba(0,0,0,0.45) 100%)',
           }}
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to bottom, rgba(15,76,129,0.05) 0%, rgba(15,76,129,0.02) 30%, rgba(15,76,129,0.78) 100%)',
+          }}
+          aria-hidden="true"
         />
         <div className="absolute inset-x-0 bottom-0">
           <div className="mx-auto max-w-6xl px-6 pb-10 md:px-10 md:pb-16">
             <div className="max-w-3xl text-[#FAFAF7]">
-              <div className="mb-3 flex items-center gap-3">
+              <div className="mb-4 flex items-center gap-3">
                 <span
-                  className="text-[11px] font-semibold tracking-[0.22em] uppercase"
+                  className="text-sm font-semibold tracking-[0.16em] uppercase md:text-base"
                   style={{ color: '#FF6B5B' }}
                 >
                   Bem-vindo a
                 </span>
-                <span className="h-px w-8" style={{ background: '#FF6B5B' }} aria-hidden="true" />
-                <span className="text-[11px] font-medium tracking-[0.12em] uppercase opacity-80">
+                <span className="h-px w-10" style={{ background: '#FF6B5B' }} aria-hidden="true" />
+                <span className="text-sm font-medium tracking-[0.1em] uppercase opacity-80 md:text-base">
                   {property.property_type}
                 </span>
               </div>
@@ -69,6 +79,11 @@ export function PropertyHero({ property }: PropertyHeroProps) {
                 <span className="mx-2 opacity-50">·</span>
                 <span className="opacity-90">{property.address.state}</span>
               </p>
+              {welcomeMessage ? (
+                <p className="mt-6 max-w-2xl text-sm leading-relaxed opacity-95 md:text-base md:leading-[1.7]">
+                  {welcomeMessage}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>

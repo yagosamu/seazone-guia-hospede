@@ -3,7 +3,7 @@ import type { Address } from '@/db/schemas/property'
 export function formatAddress(address: Address): string {
   const complement = address.complement ? `, ${address.complement}` : ''
 
-  return `${address.street}, ${address.number}${complement} — ${address.neighborhood}, ${address.city}/${address.state}, ${address.postal_code}`
+  return `${address.street}, ${address.number}${complement}, ${address.neighborhood}, ${address.city}/${address.state}, ${address.postal_code}`
 }
 
 export function whatsappUrl(phone: string): string {

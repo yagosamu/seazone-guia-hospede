@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { AccessSection } from '@/components/organisms/AccessSection'
 import { ContactSection } from '@/components/organisms/ContactSection'
+import { NeighborhoodLoader } from '@/components/organisms/NeighborhoodLoader'
+import { NeighborhoodSection } from '@/components/organisms/NeighborhoodSection'
 import { PropertyHero } from '@/components/organisms/PropertyHero'
 import { PropertyOverview } from '@/components/organisms/PropertyOverview'
 import { RulesSection } from '@/components/organisms/RulesSection'
@@ -13,10 +15,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { code } = await params
   const property = await getPropertyByCode(code)
 
-  if (!property) return { title: 'Imóvel não encontrado — Seazone' }
+  if (!property) return { title: 'Imóvel não encontrado · Seazone' }
 
   return {
-    title: `${property.name} — Guia Seazone`,
+    title: `${property.name} · Guia Seazone`,
     description: `Guia do hóspede para ${property.name} em ${property.address.city}/${property.address.state}.`,
     openGraph: { images: property.images },
   }
@@ -28,9 +30,11 @@ export default async function PropertyPage({ params }: PageProps) {
 
   if (!property) notFound()
 
+  const guide = property.experiences_guide ?? null
+
   return (
     <main className="flex flex-col">
-      <PropertyHero property={property} />
+      <PropertyHero property={property} welcomeMessage={guide?.welcome_message} />
 
       <SectionBand tone="paper">
         <PropertyOverview property={property} />
@@ -45,7 +49,15 @@ export default async function PropertyPage({ params }: PageProps) {
       </SectionBand>
 
       <SectionBand tone="sky">
-        <ContactSection property={property} />
+        {guide ? (
+          <NeighborhoodSection guide={guide} sectionNumber="04" />
+        ) : (
+          <NeighborhoodLoader code={property.code} sectionNumber="04" />
+        )}
+      </SectionBand>
+
+      <SectionBand tone="paper">
+        <ContactSection property={property} sectionNumber="05" />
       </SectionBand>
     </main>
   )

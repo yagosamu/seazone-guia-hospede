@@ -29,8 +29,8 @@ export default function NotFound() {
             Verifique o código no e-mail da sua reserva. Códigos válidos têm o formato{' '}
             <code className="bg-secondary rounded px-1.5 py-0.5 font-mono text-[13px]">
               XXX000
-            </code>{' '}
-            — por exemplo,{' '}
+            </code>
+            , por exemplo{' '}
             <code className="bg-secondary rounded px-1.5 py-0.5 font-mono text-[13px]">
               FLN001
             </code>

@@ -25,7 +25,7 @@ export const BAL001: NewProperty = {
       'Use o código 7821 na fechadura digital. O elevador requer chave-cartão entregue na portaria.',
     property_password: '7821',
     has_parking_spot: true,
-    parking_spot_identifier: 'Vaga 47 — térreo G2',
+    parking_spot_identifier: 'Vaga 47, térreo G2',
     parking_spot_instructions:
       'Acesso pelo portão da Rua 2500, controle remoto na chaveira do apartamento',
   },

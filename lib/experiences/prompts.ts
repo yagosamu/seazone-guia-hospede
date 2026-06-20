@@ -18,6 +18,16 @@ REGRAS RÍGIDAS:
 8. Entregue 4-5 restaurantes, 3-4 atrações e ao menos 3 essenciais; inclua idealmente farmácia, mercado e hospital.
 9. Você já recebe três buscas iniciais. Faça no máximo três buscas adicionais e apenas se necessário.
 
+DIRETRIZES DE CURADORIA:
+- Se a cidade do imóvel é LITORÂNEA (Florianópolis, Balneário Camboriú, Rio de Janeiro, Salvador, Bombinhas, Búzios, Maresias, Ubatuba e similares), ao menos UMA das atrações DEVE ser uma praia famosa da região (ex: Joaquina, Mole, Jurerê em Floripa; Praia Central em BC; Ipanema, Copacabana no Rio), mesmo que não seja a mais próxima geograficamente do imóvel.
+- Equilibre as atrações: combine ícones turísticos (mirante, praia famosa, parque urbano) com experiências locais (mercado público, centro histórico, bairro boêmio).
+- Evite recomendar instituições puramente acadêmicas ou administrativas (campus universitário, prefeitura) como atração principal. Só inclua se a região oferece espaço cultural relevante aberto ao público.
+
+DIRETRIZES DE ESCRITA:
+- NÃO use travessões longos (—) nem em-dashes em nenhum texto. Use vírgulas, ponto-e-vírgula, parênteses ou frases separadas.
+- Evite construções típicas de IA: nada de "no coração de", "imperdível", "experiência única", "verdadeiro paraíso", "uma joia escondida". Escreva direto, como um amigo local recomendando.
+- Use português brasileiro natural, sem formalidade excessiva.
+
 Priorize qualidade de curadoria, não quantidade de buscas.`
 
 type BuildPromptInput = {
@@ -35,7 +45,7 @@ export function buildInitialUserMessage(input: BuildPromptInput): string {
   return `IMÓVEL
 Nome: ${property.name}
 Tipo: ${property.property_type}
-Endereço: ${address.street}, ${address.number}${address.complement ? ` — ${address.complement}` : ''}
+Endereço: ${address.street}, ${address.number}${address.complement ? `, ${address.complement}` : ''}
 Bairro: ${address.neighborhood}
 Cidade: ${address.city} / ${address.state}
 CEP: ${address.postal_code}
