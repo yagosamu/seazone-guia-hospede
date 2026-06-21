@@ -3,7 +3,6 @@
 Guia digital personalizado por imóvel, com curadoria local gerada por IA e assistente conversacional anti-alucinação. Construído como teste técnico AI Builder para a Seazone.
 
 **Live demo:** https://seazone-guia-hospede-rho.vercel.app
-**Repo:** https://github.com/yagosamu/seazone-guia-hospede
 
 Acesse `/FLN001`, `/GRM001`, `/BAL001` ou `/RJ001` para ver imóveis de exemplo.
 
@@ -25,7 +24,7 @@ URL única por imóvel (`/FLN001`) com cinco camadas, **três direcionadas por I
 
 ---
 
-## Quick start
+## Início rápido
 
 ```bash
 git clone https://github.com/yagosamu/seazone-guia-hospede
@@ -116,7 +115,7 @@ Variáveis de ambiente esperadas:
 
 ---
 
-## Features
+## Funcionalidades
 
 ### 1. Visualização do guia (`/[code]`)
 
@@ -244,7 +243,7 @@ Sem persistência de conversa (chat reseta ao fechar). Para o caso de uso (pergu
 
 ---
 
-## Anti-hallucination strategy
+## Estratégia anti-alucinação
 
 Estratégia em camadas, **calibrada por feature** (chat é mais rígido, itinerary é criativo mas com guardrails).
 
@@ -351,21 +350,6 @@ tests/
   unit/                        ← schemas, helpers, prompts (chat + itinerary), queries
   integration/                 ← route handlers com mocks (generate-guide, chat, itinerary)
 ```
-
----
-
-## What I'd do with more time
-
-Funcionalidades que ficaram fora de escopo mas estão mapeadas como próximos passos:
-
-1. **Map view com pontos do guide**: mapa interativo (Leaflet + OpenStreetMap) com pins do imóvel e dos lugares do guide. Geocoding via Nominatim em paralelo após `generate-guide`. Falta apenas implementação — desenho técnico pronto.
-2. **Persistência de chat com moderação**: tabela `chat_messages` + retenção/exclusão para LGPD. Permite o anfitrião revisar conversas e ajustar dados estáticos com base em perguntas recorrentes.
-3. **Métricas em produção**: instrumentar `[generate-guide]`, `[chat]`, `[itinerary]` com OpenTelemetry → Grafana / Vercel Analytics. Dashboards de latência por região, taxa de cache hit, custo por imóvel.
-4. **Testes E2E com Playwright**: cobrir o fluxo completo "abrir página → trigger guide → conversar com chat → gerar roteiro → refinar" em browser real. Vitest cobre o backend; Playwright fecharia o ciclo.
-5. **Streaming progressivo do guide generation**: hoje o loader espera 45s e renderiza tudo de uma vez. Daria pra streamar progressivamente (restaurantes → atrações → essenciais...) usando `createUIMessageStream` no endpoint.
-6. **Voice input + TTS no chat**: hóspede chegou cansado, fala em vez de digitar (Web Speech API). Resposta com áudio (OpenAI TTS ou ElevenLabs). Mobile-first, acessibilidade.
-7. **Pre-check-in conversacional**: substituir formulário tradicional por chat que extrai dados (chegada, qtde pessoas, preferências) e ajusta o welcome message automaticamente.
-8. **Tradução do guide persistida**: hoje tradução de conteúdo gerado roda on-demand a cada troca de idioma. Cachear no DB (coluna `experiences_guide_translations`) economizaria chamadas Anthropic em sessões repetidas.
 
 ---
 
