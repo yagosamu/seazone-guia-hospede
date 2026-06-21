@@ -16,7 +16,7 @@ export function NeighborhoodSection({ guide, sectionNumber }: NeighborhoodSectio
         number={sectionNumber}
         eyebrow="Arredores"
         title="O que vale a pena conhecer ao redor"
-        description="Curadoria personalizada com lugares reais perto do imóvel."
+        description="Os melhores lugares perto, escolhidos a dedo."
       />
 
       <SubSection title="Restaurantes" subtitle={`${guide.restaurants.length} opções selecionadas`}>

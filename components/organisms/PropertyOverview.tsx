@@ -2,15 +2,14 @@ import { Bath, BedDouble, Home, Users } from 'lucide-react'
 import type { Property } from '@/db/schema'
 import { SectionHeader } from '@/components/atoms/SectionHeader'
 import { AmenityChip } from '@/components/molecules/AmenityChip'
+import { listAvailableAmenities } from '@/lib/amenities'
 
 type PropertyOverviewProps = {
   property: Property
 }
 
 export function PropertyOverview({ property }: PropertyOverviewProps) {
-  const amenities = Object.entries(property.amenities)
-    .filter(([, available]) => available)
-    .map(([key]) => key)
+  const amenities = listAvailableAmenities(property.amenities)
 
   return (
     <section className="space-y-7">
@@ -46,7 +45,7 @@ export function PropertyOverview({ property }: PropertyOverviewProps) {
 
       <div className="space-y-3">
         <h3 className="text-muted-foreground text-[10px] font-semibold tracking-[0.2em] uppercase">
-          Amenidades
+          Comodidades
         </h3>
         <div className="flex flex-wrap gap-2">
           {amenities.map((amenity) => (
