@@ -1,6 +1,6 @@
 'use client'
 
-import { Coffee, Moon, Sun } from 'lucide-react'
+import { Clock, Coffee, MapPin, Moon, Sun } from 'lucide-react'
 import type { Day, Period } from '@/lib/itinerary/types'
 import { interpolate, useT } from '@/lib/i18n/provider'
 

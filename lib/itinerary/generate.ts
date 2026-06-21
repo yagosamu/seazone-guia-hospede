@@ -20,6 +20,6 @@ export async function generateItinerary(property: Property, request: ItineraryRe
   if (!toolUse) throw new ItineraryError('Claude não chamou submit_itinerary', 502)
   const parsed = ItinerarySchema.safeParse(toolUse.input)
   if (!parsed.success) throw new ItineraryError(`Roteiro inválido: ${parsed.error.message}`, 502, parsed.error)
-  validateItineraryCoherence(parsed.data, request.days, property.experiences_guide)
+  validateItineraryCoherence(parsed.data, request.days, property.experiences_guide, request.transport)
   return parsed.data
 }

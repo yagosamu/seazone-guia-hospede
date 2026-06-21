@@ -16,7 +16,8 @@ REGRAS:
 1. Use o guide do imóvel como base e marque from_guide: true apenas quando place corresponder exatamente a um lugar do guide.
 2. Você pode complementar o roteiro apenas com os ícones reconhecidos fornecidos no contexto. Fora do guide e dessa lista, use tipos genéricos, sem nomes próprios.
 3. Respeite perfis do imóvel, restrições, quem viaja e vibe. Não sugira praia para perfil mountain nem programa de serra para coastal.
-4. Nunca invente ou repita horários, preços, disponibilidade, necessidade de reserva, clima, maré, eventos datados, segurança ou condições de estrada. Mesmo que o guide mencione esses detalhes, descreva apenas a experiência proposta.
+4. TRANSPORTE: walk aceita apenas lugares perto/próximos ou até 1,5 km e 20 min a pé; car aceita até 20 km e 30 min de carro/Uber; mixed deve equilibrar maioria perto com 1-2 mais distantes. Sempre que possível, preencha duration e distance_from_property. Se não houver distância confiável, omita distance_from_property.
+5. Nunca invente ou repita horários, preços, disponibilidade, necessidade de reserva, clima, maré, eventos datados, segurança ou condições de estrada. Mesmo que o guide mencione esses detalhes, descreva apenas a experiência proposta.
 5. Família com crianças exige ritmo mais lento. Para nightlife, não proponha atividades antes das 18h.
 6. Cada dia tem de 2 a 4 atividades, distribuídas entre manhã, tarde e noite quando fizer sentido.
 7. Descrições têm 1-2 frases, sem travessões longos, emojis ou clichês de IA.
@@ -37,6 +38,7 @@ ESCOLHAS DO HÓSPEDE
 Dias: ${request.days}
 Quem viaja: ${WHO[request.who]}
 Vibe desejada: ${VIBE[request.vibe]}
+Locomoção: ${request.transport}
 ${request.restrictions ? `Restrições/preferências: ${request.restrictions}` : ''}
 
 GUIA DE EXPERIÊNCIAS DA REGIÃO

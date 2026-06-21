@@ -7,7 +7,7 @@ vi.mock('@/lib/itinerary/generate', () => ({ generateItinerary: mocks.generate }
 import { POST } from '@/app/api/itinerary/route'
 
 const request = (body: unknown) => new Request('http://localhost/api/itinerary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-const body = { code: 'FLN001', days: 2, who: 'couple', vibe: 'gastronomy' }
+const body = { code: 'FLN001', days: 2, who: 'couple', vibe: 'gastronomy', transport: 'mixed' }
 
 describe('POST /api/itinerary', () => {
   beforeEach(() => Object.values(mocks).forEach((mock) => mock.mockReset()))
@@ -21,6 +21,6 @@ describe('POST /api/itinerary', () => {
     mocks.generate.mockResolvedValueOnce({ intro: 'Roteiro', days: [] })
     const response = await POST(request({ ...body, locale: 'en' }))
     expect(response.status).toBe(200)
-    expect(mocks.generate).toHaveBeenCalledWith({ code: 'FLN001' }, { days: 2, who: 'couple', vibe: 'gastronomy' }, 'en')
+    expect(mocks.generate).toHaveBeenCalledWith({ code: 'FLN001' }, { days: 2, who: 'couple', vibe: 'gastronomy', transport: 'mixed' }, 'en')
   })
 })
