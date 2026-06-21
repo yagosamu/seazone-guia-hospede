@@ -78,6 +78,10 @@ export function getAmenity(key: string): AmenityDefinition {
   return AMENITY_MAP[key] ?? { label: key.replace(/_/g, ' '), icon: Check }
 }
 
+export function getAmenityIcon(key: string): LucideIcon {
+  return (AMENITY_MAP[key] ?? { icon: Check }).icon
+}
+
 /**
  * Lista as keys de amenities disponíveis no imóvel, ordenadas pela ordem definida
  * em AMENITY_MAP. Keys desconhecidas vão pro final, em ordem alfabética.

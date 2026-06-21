@@ -1,7 +1,11 @@
+'use client'
+
 import Link from 'next/link'
 import { MapPinOff } from 'lucide-react'
+import { interpolate, useT } from '@/lib/i18n/provider'
 
 export default function NotFound() {
+  const t = useT()
   return (
     <main className="flex min-h-[80vh] items-center justify-center px-6">
       <div className="max-w-md space-y-6 text-center">
@@ -20,21 +24,13 @@ export default function NotFound() {
             className="text-[10px] font-semibold tracking-[0.22em] uppercase"
             style={{ color: '#FF6B5B' }}
           >
-            Erro 404
+            {t.notFound.eyebrow}
           </p>
           <h1 className="text-foreground text-3xl font-bold tracking-tight">
-            Imóvel não encontrado
+            {t.notFound.title}
           </h1>
           <p className="text-muted-foreground text-[15px] leading-relaxed">
-            Verifique o código no e-mail da sua reserva. Códigos válidos têm o formato{' '}
-            <code className="bg-secondary rounded px-1.5 py-0.5 font-mono text-[13px]">
-              XXX000
-            </code>
-            , por exemplo{' '}
-            <code className="bg-secondary rounded px-1.5 py-0.5 font-mono text-[13px]">
-              FLN001
-            </code>
-            .
+            {interpolate(t.notFound.description, { format: 'XXX000', example: 'FLN001' })}
           </p>
         </div>
         <Link
@@ -42,7 +38,7 @@ export default function NotFound() {
           className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition hover:brightness-110 active:scale-[0.98]"
           style={{ background: 'var(--seazone-blue)', color: '#FAFAF7' }}
         >
-          Voltar ao início
+          {t.notFound.cta}
         </Link>
       </div>
     </main>

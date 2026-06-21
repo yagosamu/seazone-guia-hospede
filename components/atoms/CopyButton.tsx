@@ -7,9 +7,10 @@ type CopyButtonProps = {
   value: string
   variant?: 'default' | 'coral'
   label?: string
+  copiedLabel?: string
 }
 
-export function CopyButton({ value, variant = 'default', label = 'Copiar' }: CopyButtonProps) {
+export function CopyButton({ value, variant = 'default', label = '', copiedLabel = '' }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
   async function copy(): Promise<void> {
@@ -35,7 +36,7 @@ export function CopyButton({ value, variant = 'default', label = 'Copiar' }: Cop
       ) : (
         <Copy className="h-3.5 w-3.5" aria-hidden="true" />
       )}
-      {copied ? 'Copiado' : label}
+      {copied ? copiedLabel : label}
     </button>
   )
 }

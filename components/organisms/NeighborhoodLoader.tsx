@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Loader2, RefreshCcw } from 'lucide-react'
 import { SectionHeader } from '@/components/atoms/SectionHeader'
+import { useT } from '@/lib/i18n/provider'
 
 type NeighborhoodLoaderProps = {
   code: string
@@ -15,14 +16,11 @@ type Stage = {
   label: string
 }
 
-const STAGES: Stage[] = [
-  { threshold: 0, label: 'Buscando lugares reais perto do imóvel' },
-  { threshold: 12_000, label: 'Curando recomendações personalizadas' },
-  { threshold: 30_000, label: 'Finalizando o guia da região' },
-  { threshold: 50_000, label: 'Quase pronto, polindo as descrições' },
-]
+const STAGE_THRESHOLDS = [0, 12_000, 30_000, 50_000]
 
 export function NeighborhoodLoader({ code, sectionNumber }: NeighborhoodLoaderProps) {
+  const t = useT()
+  const stages: Stage[] = STAGE_THRESHOLDS.map((threshold, index) => ({ threshold, label: t.neighborhoodLoader.stages[index] ?? '' }))
   const router = useRouter()
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -48,7 +46,7 @@ export function NeighborhoodLoader({ code, sectionNumber }: NeighborhoodLoaderPr
     stageTimerRef.current = setInterval(() => {
       if (!startedAt.current) return
       const elapsed = Date.now() - startedAt.current
-      const next = STAGES.reduce(
+      const next = stages.reduce(
         (acc, s, i) => (elapsed >= s.threshold ? i : acc),
         0,
       )
@@ -87,8 +85,8 @@ export function NeighborhoodLoader({ code, sectionNumber }: NeighborhoodLoaderPr
       <section className="space-y-6">
         <SectionHeader
           number={sectionNumber}
-          eyebrow="Arredores"
-          title="Não conseguimos gerar o guia agora"
+          eyebrow={t.neighborhoodLoader.eyebrow}
+          title={t.neighborhoodLoader.error}
         />
         <div
           className="flex flex-col gap-4 rounded-2xl border p-6 md:flex-row md:items-center md:justify-between md:p-8"
@@ -104,7 +102,7 @@ export function NeighborhoodLoader({ code, sectionNumber }: NeighborhoodLoaderPr
               aria-hidden="true"
             />
             <p className="text-foreground text-sm leading-relaxed">
-              {errorMsg ?? 'Algo deu errado durante a geração. Tente novamente.'}
+              {errorMsg ?? t.neighborhoodLoader.error}
             </p>
           </div>
           <button
@@ -114,22 +112,22 @@ export function NeighborhoodLoader({ code, sectionNumber }: NeighborhoodLoaderPr
             style={{ background: '#FF6B5B', color: '#FAFAF7' }}
           >
             <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            Tentar novamente
+            {t.neighborhoodLoader.retry}
           </button>
         </div>
       </section>
     )
   }
 
-  const currentStage = STAGES[stageIdx]?.label ?? 'Preparando...'
+  const currentStage = stages[stageIdx]?.label ?? t.neighborhoodLoader.fallbackStage
 
   return (
     <section className="space-y-8">
       <SectionHeader
         number={sectionNumber}
-        eyebrow="Arredores"
-        title="Estamos preparando seu guia personalizado"
-        description="Buscando restaurantes, atrações e serviços reais perto do imóvel. Isso leva cerca de 45 segundos na primeira visita. Depois fica em cache."
+        eyebrow={t.neighborhoodLoader.eyebrow}
+        title={t.neighborhoodLoader.title}
+        description={t.neighborhoodLoader.description}
       />
 
       <div className="border-border bg-card flex items-center gap-4 rounded-2xl border px-5 py-4">
@@ -142,9 +140,9 @@ export function NeighborhoodLoader({ code, sectionNumber }: NeighborhoodLoaderPr
       </div>
 
       <div className="space-y-10">
-        <SkeletonGroup title="Restaurantes" count={4} />
-        <SkeletonGroup title="Atrações" count={4} />
-        <SkeletonGroup title="Essenciais" count={3} />
+        <SkeletonGroup title={t.neighborhood.restaurants} count={4} />
+        <SkeletonGroup title={t.neighborhood.attractions} count={4} />
+        <SkeletonGroup title={t.neighborhood.essentials} count={3} />
       </div>
     </section>
   )

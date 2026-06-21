@@ -1,6 +1,9 @@
+'use client'
+
 import { Check, X } from 'lucide-react'
 import type { Property } from '@/db/schema'
 import { SectionHeader } from '@/components/atoms/SectionHeader'
+import { interpolate, useT } from '@/lib/i18n/provider'
 
 type RulesSectionProps = {
   property: Property
@@ -12,27 +15,28 @@ type Rule = {
 }
 
 export function RulesSection({ property }: RulesSectionProps) {
+  const t = useT()
   const { rules } = property
 
   const items: Rule[] = [
     {
-      label: { positive: 'Crianças bem-vindas', negative: 'Não adequado para crianças' },
+      label: t.rules.items.children,
       value: rules.suitable_for_children,
     },
     {
-      label: { positive: 'Bebês acomodados', negative: 'Não adequado para bebês' },
+      label: t.rules.items.babies,
       value: rules.suitable_for_babies,
     },
     {
-      label: { positive: 'Pets permitidos', negative: 'Animais não permitidos' },
+      label: t.rules.items.pet,
       value: rules.allow_pet,
     },
     {
-      label: { positive: 'Fumar permitido', negative: 'Não é permitido fumar' },
+      label: t.rules.items.smoking,
       value: rules.smoking_permitted,
     },
     {
-      label: { positive: 'Eventos permitidos', negative: 'Eventos não permitidos' },
+      label: t.rules.items.events,
       value: rules.events_permitted,
     },
   ]
@@ -41,9 +45,9 @@ export function RulesSection({ property }: RulesSectionProps) {
     <section className="space-y-7">
       <SectionHeader
         number="03"
-        eyebrow="Regras da estadia"
-        title="O que você pode esperar deste imóvel"
-        description={`Check-in a partir das ${rules.check_in_time} e check-out até as ${rules.check_out_time}.`}
+        eyebrow={t.rules.eyebrow}
+        title={t.rules.title}
+        description={interpolate(t.rules.description, { checkIn: rules.check_in_time, checkOut: rules.check_out_time })}
       />
 
       <div className="grid gap-3 md:grid-cols-2">

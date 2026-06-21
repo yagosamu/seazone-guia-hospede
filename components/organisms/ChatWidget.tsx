@@ -4,7 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
 import { ArrowUp, MessageCircle, Sparkles, X } from 'lucide-react'
-import { interpolate, useI18n } from '@/lib/i18n/provider'
+import { interpolate, useI18n, useT } from '@/lib/i18n/provider'
 
 type ChatWidgetProps = {
   code: string
@@ -69,12 +69,12 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Abrir assistente virtual"
+        aria-label={t.chat.openLabel}
         className="fixed right-5 bottom-5 z-40 inline-flex items-center gap-2 rounded-full px-5 py-3.5 text-sm font-semibold shadow-lg shadow-black/15 transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] md:right-8 md:bottom-8"
         style={{ background: '#FF6B5B', color: '#FAFAF7' }}
       >
         <Sparkles className="h-4 w-4" aria-hidden="true" />
-        Assistente
+        {t.chat.launcherLabel}
       </button>
 
       {open ? (
@@ -86,7 +86,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
         >
           <button
             type="button"
-            aria-label="Fechar"
+            aria-label={t.chat.close}
             onClick={() => setOpen(false)}
             className="absolute inset-0 cursor-default"
             style={{ background: 'rgba(8, 28, 52, 0.45)' }}
@@ -109,7 +109,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                     id={titleId}
                     className="text-sm font-bold tracking-tight"
                   >
-                    Assistente Seazone
+                    {t.chat.headerTitle}
                   </p>
                   <p className="truncate text-[11px] tracking-wide opacity-80">
                     {propertyName}
@@ -120,7 +120,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                 type="button"
                 onClick={() => setOpen(false)}
                 className="rounded-full p-2 transition hover:bg-white/10"
-                aria-label="Fechar assistente"
+                aria-label={t.chat.close}
               >
                 <X className="h-4 w-4" style={{ color: '#FAFAF7' }} aria-hidden="true" />
               </button>
@@ -133,7 +133,6 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
             >
               {messages.length === 0 ? (
                 <EmptyState
-                  hostFirstName={hostFirstName}
                   suggestions={suggestions}
                   onPick={(prompt) => handleSubmit(prompt)}
                 />
@@ -155,7 +154,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                   }}
                 >
                   <p className="text-foreground leading-relaxed">
-                    Não consegui responder. Tente de novo em instantes.
+                    {t.chat.errorMessage}
                   </p>
                   <button
                     type="button"
@@ -163,7 +162,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                     className="shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-wide uppercase"
                     style={{ background: '#FF6B5B', color: '#FAFAF7' }}
                   >
-                    Tentar
+                    {t.chat.errorRetry}
                   </button>
                 </div>
               ) : null}
@@ -186,16 +185,16 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                       handleSubmit(input)
                     }
                   }}
-                  placeholder={`Pergunte sobre o imóvel...`}
+                  placeholder={t.chat.placeholder}
                   rows={1}
                   className="border-border bg-card text-foreground placeholder:text-muted-foreground max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border px-4 py-2.5 text-sm leading-relaxed outline-none focus:border-[var(--seazone-blue)] focus:ring-2 focus:ring-[var(--seazone-blue)]/20"
-                  aria-label="Sua pergunta"
+                  aria-label={t.chat.questionLabel}
                 />
                 {isLoading ? (
                   <button
                     type="button"
                     onClick={() => stop()}
-                    aria-label="Parar resposta"
+                    aria-label={t.chat.stop}
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border transition hover:brightness-110"
                     style={{ borderColor: 'var(--seazone-blue)', color: 'var(--seazone-blue)' }}
                   >
@@ -205,7 +204,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                   <button
                     type="submit"
                     disabled={!input.trim()}
-                    aria-label="Enviar"
+                    aria-label={t.chat.send}
                     className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition hover:brightness-110 disabled:opacity-40"
                     style={{ background: '#FF6B5B', color: '#FAFAF7' }}
                   >
@@ -214,8 +213,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                 )}
               </form>
               <p className="text-muted-foreground mt-2 text-[11px] leading-relaxed">
-                Respostas baseadas nos dados deste imóvel. Para casos urgentes, fale direto com{' '}
-                {hostFirstName}.
+                {interpolate(t.chat.footer, { hostName: hostFirstName })}
               </p>
             </footer>
           </div>
@@ -226,14 +224,13 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
 }
 
 function EmptyState({
-  hostFirstName,
   suggestions,
   onPick,
 }: {
-  hostFirstName: string
   suggestions: Suggestion[]
   onPick: (prompt: string) => void
 }) {
+  const t = useT()
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 py-8 text-center">
       <div
@@ -244,11 +241,10 @@ function EmptyState({
       </div>
       <div className="space-y-2">
         <h3 className="text-foreground text-lg font-bold tracking-tight">
-          Como posso ajudar na sua estadia?
+          {t.chat.emptyTitle}
         </h3>
         <p className="text-muted-foreground mx-auto max-w-sm text-sm leading-relaxed">
-          Pergunte sobre WiFi, regras, horários ou dicas da região. Respondo na hora com base nos
-          dados deste imóvel.
+          {t.chat.emptyDescription}
         </p>
       </div>
       <div className="grid w-full max-w-sm gap-2">

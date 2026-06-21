@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { AlertTriangle, Loader2, RefreshCcw, Sparkles } from 'lucide-react'
+import { useT } from '@/lib/i18n/provider'
 
 type WelcomeLoaderProps = {
   code: string
@@ -13,13 +14,11 @@ type Stage = {
   label: string
 }
 
-const STAGES: Stage[] = [
-  { threshold: 0, label: 'Personalizando a sua experiência' },
-  { threshold: 4_000, label: 'Adaptando a mensagem ao seu bairro' },
-  { threshold: 8_000, label: 'Quase pronto' },
-]
+const STAGE_THRESHOLDS = [0, 4_000, 8_000]
 
 export function WelcomeLoader({ code }: WelcomeLoaderProps) {
+  const t = useT()
+  const stages: Stage[] = STAGE_THRESHOLDS.map((threshold, index) => ({ threshold, label: t.welcomeLoader.stages[index] ?? '' }))
   const router = useRouter()
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -45,7 +44,7 @@ export function WelcomeLoader({ code }: WelcomeLoaderProps) {
     stageTimerRef.current = setInterval(() => {
       if (!startedAt.current) return
       const elapsed = Date.now() - startedAt.current
-      const next = STAGES.reduce((acc, s, i) => (elapsed >= s.threshold ? i : acc), 0)
+      const next = stages.reduce((acc, s, i) => (elapsed >= s.threshold ? i : acc), 0)
       setStageIdx(next)
     }, 800)
 
@@ -91,7 +90,7 @@ export function WelcomeLoader({ code }: WelcomeLoaderProps) {
             aria-hidden="true"
           />
           <p className="text-foreground text-sm leading-relaxed">
-            {errorMsg ?? 'Não conseguimos gerar a mensagem de boas-vindas agora.'}
+            {errorMsg ?? t.welcomeLoader.error}
           </p>
         </div>
         <button
@@ -101,13 +100,13 @@ export function WelcomeLoader({ code }: WelcomeLoaderProps) {
           style={{ background: '#FF6B5B', color: '#FAFAF7' }}
         >
           <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-          Tentar novamente
+          {t.welcomeLoader.retry}
         </button>
       </section>
     )
   }
 
-  const currentStage = STAGES[stageIdx]?.label ?? 'Personalizando'
+  const currentStage = stages[stageIdx]?.label ?? t.welcomeLoader.fallbackStage
 
   return (
     <section className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
@@ -122,7 +121,7 @@ export function WelcomeLoader({ code }: WelcomeLoaderProps) {
           className="text-[10px] font-semibold tracking-[0.22em] uppercase"
           style={{ color: '#FF6B5B' }}
         >
-          Boas-vindas
+          {t.welcomeLoader.eyebrow}
         </p>
         <div className="flex items-center gap-3">
           <Loader2

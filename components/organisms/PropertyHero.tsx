@@ -4,14 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Property } from '@/db/schema'
-
-const ACCESS_LABELS: Record<string, string> = {
-  smart_lock: 'Self check-in',
-  keybox: 'Cofre de chaves',
-  reception: 'Recepção',
-  in_person: 'Em pessoa',
-  other: 'Outro acesso',
-}
+import { interpolate, useT } from '@/lib/i18n/provider'
 
 const AUTOPLAY_INTERVAL = 6000
 
@@ -20,6 +13,7 @@ type PropertyHeroProps = {
 }
 
 export function PropertyHero({ property }: PropertyHeroProps) {
+  const t = useT()
   const images = property.images
   const total = images.length
   const [activeIdx, setActiveIdx] = useState(0)
@@ -27,8 +21,8 @@ export function PropertyHero({ property }: PropertyHeroProps) {
   const touchStartX = useRef<number | null>(null)
 
   const access = property.operational.is_self_checkin
-    ? 'Self check-in'
-    : (ACCESS_LABELS[property.operational.property_access_type] ?? 'Acesso ao imóvel')
+    ? t.hero.accessLabels.selfCheckin
+    : (t.hero.accessLabels[property.operational.property_access_type] ?? property.operational.property_access_type)
 
   const goPrev = useCallback(
     () => setActiveIdx((i) => (i - 1 + total) % total),
@@ -106,7 +100,7 @@ export function PropertyHero({ property }: PropertyHeroProps) {
             <button
               type="button"
               onClick={goPrev}
-              aria-label="Foto anterior"
+              aria-label={t.hero.prevPhoto}
               className="absolute top-1/2 left-3 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/15 p-2.5 text-white backdrop-blur-sm transition hover:bg-white/30 md:left-6 md:flex"
             >
               <ChevronLeft className="h-5 w-5" aria-hidden="true" />
@@ -114,7 +108,7 @@ export function PropertyHero({ property }: PropertyHeroProps) {
             <button
               type="button"
               onClick={goNext}
-              aria-label="Próxima foto"
+              aria-label={t.hero.nextPhoto}
               className="absolute top-1/2 right-3 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/15 p-2.5 text-white backdrop-blur-sm transition hover:bg-white/30 md:right-6 md:flex"
             >
               <ChevronRight className="h-5 w-5" aria-hidden="true" />
@@ -130,7 +124,7 @@ export function PropertyHero({ property }: PropertyHeroProps) {
                   className="text-sm font-semibold tracking-[0.16em] uppercase md:text-base"
                   style={{ color: '#FF6B5B' }}
                 >
-                  Bem-vindo a
+                  {t.hero.welcomeTo}
                 </span>
                 <span className="h-px w-10" style={{ background: '#FF6B5B' }} aria-hidden="true" />
                 <span className="text-sm font-medium tracking-[0.1em] uppercase opacity-80 md:text-base">
@@ -155,14 +149,14 @@ export function PropertyHero({ property }: PropertyHeroProps) {
             </div>
 
             {total > 1 ? (
-              <div className="mt-6 flex items-center gap-2" role="tablist" aria-label="Navegação de fotos">
+              <div className="mt-6 flex items-center gap-2" role="tablist" aria-label={t.hero.photosNav}>
                 {images.map((_, i) => (
                   <button
                     key={i}
                     type="button"
                     role="tab"
                     aria-selected={i === activeIdx}
-                    aria-label={`Foto ${i + 1} de ${total}`}
+                    aria-label={interpolate(t.hero.photoOfTotal, { n: i + 1, total })}
                     onClick={() => setActiveIdx(i)}
                     className="h-1.5 rounded-full transition-all"
                     style={{
@@ -179,9 +173,9 @@ export function PropertyHero({ property }: PropertyHeroProps) {
 
       <div className="border-border bg-background border-b">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-0 px-6 md:grid-cols-3 md:px-10">
-          <HeroStat label="Check-in" value={property.rules.check_in_time} />
-          <HeroStat label="Check-out" value={property.rules.check_out_time} divider />
-          <HeroStat label="Acesso" value={access} divider />
+          <HeroStat label={t.hero.checkIn} value={property.rules.check_in_time} />
+          <HeroStat label={t.hero.checkOut} value={property.rules.check_out_time} divider />
+          <HeroStat label={t.hero.access} value={access} divider />
         </div>
       </div>
     </section>

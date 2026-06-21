@@ -1,7 +1,10 @@
+'use client'
+
 import { MapPin, MessageCircle } from 'lucide-react'
 import type { Property } from '@/db/schema'
 import { SectionHeader } from '@/components/atoms/SectionHeader'
 import { formatAddress, googleMapsUrl, whatsappUrl } from '@/lib/format'
+import { useT } from '@/lib/i18n/provider'
 
 type ContactSectionProps = {
   property: Property
@@ -9,6 +12,7 @@ type ContactSectionProps = {
 }
 
 export function ContactSection({ property, sectionNumber = '04' }: ContactSectionProps) {
+  const t = useT()
   const { host, address } = property
   const initials = getInitials(host.name)
 
@@ -16,9 +20,9 @@ export function ContactSection({ property, sectionNumber = '04' }: ContactSectio
     <section className="space-y-7 pb-12">
       <SectionHeader
         number={sectionNumber}
-        eyebrow="Contato e endereço"
-        title="Conte com seu anfitrião"
-        description="Qualquer dúvida durante a estadia, fale direto com quem cuida do imóvel."
+        eyebrow={t.contact.eyebrow}
+        title={t.contact.title}
+        description={t.contact.description}
       />
 
       <div className="grid gap-8 md:grid-cols-[1fr_1fr]">
@@ -32,7 +36,7 @@ export function ContactSection({ property, sectionNumber = '04' }: ContactSectio
             </div>
             <div>
               <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.2em] uppercase">
-                Anfitrião
+                {t.contact.host}
               </p>
               <p className="text-foreground text-lg font-semibold">{host.name}</p>
               <p className="text-muted-foreground nums-tabular text-sm">{formatPhone(host.phone)}</p>
@@ -47,13 +51,13 @@ export function ContactSection({ property, sectionNumber = '04' }: ContactSectio
             style={{ background: '#FF6B5B', color: '#FAFAF7' }}
           >
             <MessageCircle className="h-4 w-4" aria-hidden="true" />
-            Falar no WhatsApp
+            {t.contact.whatsapp}
           </a>
         </div>
 
         <div className="space-y-4">
           <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.2em] uppercase">
-            Endereço
+            {t.contact.address}
           </p>
           <address className="text-foreground space-y-0.5 text-[15px] leading-relaxed not-italic">
             <p className="font-semibold">
@@ -74,7 +78,7 @@ export function ContactSection({ property, sectionNumber = '04' }: ContactSectio
             style={{ borderColor: 'var(--seazone-blue)', color: 'var(--seazone-blue)' }}
           >
             <MapPin className="h-4 w-4" aria-hidden="true" />
-            Ver no Google Maps
+            {t.contact.googleMaps}
           </a>
         </div>
       </div>
