@@ -143,6 +143,10 @@ Chat com streaming token-a-token (`smoothStream` 18ms por palavra) e regras anti
 
 UI: floating launcher (FAB coral) + drawer right (desktop) ou fullscreen (mobile). Quick suggestions cobrem as 4 perguntas-modelo do PDF (WiFi, pet, check-in, restaurantes). Estados completos: loading dots, streaming visível, error inline com retry.
 
+### 4. Idiomas (PT / EN / ES)
+
+Seletor de idioma com UI estática traduzida e tradução on-demand do conteúdo gerado por IA. O locale selecionado também é enviado ao chat: respostas, inclusive o redirecionamento para o anfitrião, são produzidas em português, inglês ou espanhol conforme a escolha do hóspede.
+
 ---
 
 ## Compliance com requisitos
@@ -180,7 +184,7 @@ Mapeamento explícito de cada validação do briefing (PDF Seazone) e como atend
 | Uso de IA (LLM) | Claude Sonnet 4.6 (Anthropic) com tool calling para geração e streaming para chat |
 | Atomic Design | Estrutura `atoms/` (SectionHeader, CopyButton, PlaceTypeBadge) → `molecules/` (AmenityChip, PlaceCard) → `organisms/` (Hero, sections, Chat) |
 | Padrões de commits | Conventional Commits para mudanças estruturais (`feat(api):`, `feat(db):`, `chore:`, `test:`, `redesign:`) e descritivos curtos para polish visual. Histórico mostra a progressão em fases |
-| Testes (diferencial) | 35 testes Vitest em 10 arquivos cobrindo schemas, helpers, queries, prompts (anti-hallucination) e route handlers |
+| Testes (diferencial) | 36 testes Vitest em 10 arquivos cobrindo schemas, helpers, queries, prompts (anti-hallucination e idioma), e route handlers |
 
 ---
 
@@ -229,11 +233,11 @@ Validação manual cobre os 4 cenários do PDF (WiFi exato, pet por imóvel, che
 npm test
 ```
 
-35 testes em 10 arquivos cobrindo:
+36 testes em 10 arquivos cobrindo:
 
 - **Schemas Zod** (`tests/unit/schemas/`): boundaries das validações de Property e ExperiencesGuide.
 - **Helpers** (`tests/unit/lib/`): `formatAddress`, `whatsappUrl`, `googleMapsUrl`, `getAmenity` fallback, classes de erro.
-- **buildSystemPrompt do chat** (`tests/unit/lib/chat/`): presença de regras anti-hallucination, dados do imóvel injetados corretamente, diferenciação por imóvel (FLN sem pet vs GRM com pet).
+- **buildSystemPrompt do chat** (`tests/unit/lib/chat/`): regras anti-hallucination, dados do imóvel injetados corretamente, diferenciação por imóvel (FLN sem pet vs GRM com pet) e idioma de resposta selecionado (PT/EN/ES).
 - **Queries DB** (`tests/unit/db/queries.test.ts`): normalização de código (uppercase, trim), null case.
 - **Route handlers** (`tests/integration/api/`): generate-guide com mock de Anthropic/Tavily (404, cache hit, force regenerate, body inválido). Chat com mock de streamText (404, 400, prompt building correto).
 
@@ -283,5 +287,4 @@ tests/
   unit/                        ← schemas, helpers, prompts, queries
   integration/                 ← route handlers com mocks
 ```
-
 
