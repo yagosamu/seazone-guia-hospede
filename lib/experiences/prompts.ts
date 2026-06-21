@@ -1,5 +1,6 @@
 import type { Property } from '@/db/schema'
 import type { TavilyResponse } from '@/lib/tavily'
+import { buildProfileGuidance, resolvePropertyProfiles } from '@/lib/property-profiles'
 
 export const SYSTEM_PROMPT = `Você é um curador local especialista em hospitalidade no Brasil. Monte um guia para hóspedes de aluguel por temporada baseado somente em informações REAIS das buscas fornecidas.
 
@@ -40,6 +41,7 @@ type BuildPromptInput = {
 export function buildInitialUserMessage(input: BuildPromptInput): string {
   const { property, restaurantsResults, attractionsResults, essentialsResults, currentMonth } = input
   const { address } = property
+  const profileGuidance = buildProfileGuidance(resolvePropertyProfiles(property), 'guide')
 
   return `IMÓVEL
 Nome: ${property.name}
@@ -50,6 +52,8 @@ Cidade: ${address.city} / ${address.state}
 CEP: ${address.postal_code}
 
 MÊS ATUAL: ${currentMonth}
+
+${profileGuidance}
 
 BUSCAS INICIAIS PRÉ-FEITAS:
 

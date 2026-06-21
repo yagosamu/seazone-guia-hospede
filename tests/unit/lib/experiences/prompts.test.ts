@@ -28,4 +28,17 @@ describe('experiences prompts', () => {
     expect(message).toContain('https://example.test')
     expect(message).toContain('junho')
   })
+
+  it('includes coastal profile guidance for FLN001', () => {
+    const message = buildInitialUserMessage({
+      property,
+      restaurantsResults: search,
+      attractionsResults: search,
+      essentialsResults: search,
+      currentMonth: 'junho',
+    })
+
+    expect(message).toContain('PERFIS ATIVOS DESTE IMÓVEL: coastal')
+    expect(message).toContain('não são fonte de fatos novos')
+  })
 })
