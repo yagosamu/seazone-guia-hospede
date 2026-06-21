@@ -15,11 +15,13 @@ A Seazone gerencia mais de 3.000 imóveis no Brasil. O guia atual do hóspede é
 
 ## A solução
 
-URL única por imóvel (`/FLN001`) com três camadas:
+URL única por imóvel (`/FLN001`) com cinco camadas, **três direcionadas por IA**:
 
-1. **Visualização estática**: dados do imóvel renderizados via Server Components diretamente do Postgres.
-2. **Guia de Experiências gerado por IA**: agente Claude com tool calling a Tavily descobre lugares reais da região, sintetiza e persiste no banco (cache 30 dias).
-3. **Assistente virtual streaming**: chat com Claude que responde sobre o imóvel usando apenas dados do contexto, com regras anti-alucinação explícitas.
+1. **Visualização estática**: dados do imóvel renderizados via Server Components direto do Postgres.
+2. **Boas-vindas + Guia de Experiências gerados por IA** _(AI)_: dois endpoints — welcome rápido (~5s, sem Tavily) e guide completo via agente Claude com tool calling a Tavily (descobre lugares reais, ~45s). Ambos persistidos no banco (cache 30 dias). Curadoria é ajustada por **perfil do imóvel** (coastal/mountain/urban/rural) detectado automaticamente.
+3. **Assistente virtual streaming** _(AI)_: chat com Claude que responde usando apenas o contexto do imóvel + guide, com regras anti-alucinação explícitas. Caracteriza lugares do guide com conhecimento geral, mas redireciona pro anfitrião quando contexto não cobre.
+4. **Roteiro personalizado** _(AI)_: planner que monta itinerário day-by-day a partir de 5 preferências do hóspede (dias, perfil, vibe, locomoção, restrições). Guardrails de raio por transporte (`a pé` ≤ 1,5 km, `carro` ≤ 20 km), allowlist de ícones por cidade e validação de coerência pós-Zod garantem que a IA não invente lugares nem viole o raio escolhido.
+5. **Multilíngue (PT/EN/ES)**: toggle no topo da página. UI traduzida, conteúdo gerado por IA é traduzido on-demand, e o chat responde no idioma escolhido com termos regionais naturais.
 
 ---
 
@@ -97,7 +99,7 @@ Variáveis de ambiente esperadas:
 
 ---
 
-## Stack & why it matters
+## Stack 
 
 | Camada | Escolha | Por quê |
 |---|---|---|
@@ -145,7 +147,33 @@ UI: floating launcher (FAB coral) + drawer right (desktop) ou fullscreen (mobile
 
 ### 4. Idiomas (PT / EN / ES)
 
-Seletor de idioma com UI estática traduzida e tradução on-demand do conteúdo gerado por IA. O locale selecionado também é enviado ao chat: respostas, inclusive o redirecionamento para o anfitrião, são produzidas em português, inglês ou espanhol conforme a escolha do hóspede.
+Seletor de idioma com UI estática traduzida em 3 dicionários e tradução on-demand do conteúdo gerado por IA (welcome + descrições + dica sazonal via `/api/translate` com Claude). Place names e distâncias ficam em português (não traduzir "Praia da Joaquina"). O locale também viaja no body do `/api/chat`: o assistente responde em PT/EN/ES com termos regionais naturais, mantendo dados literais (rede WiFi, senha, código de acesso) intactos.
+
+### 5. Roteiro personalizado por IA (`/api/itinerary` + `/api/itinerary/refine`)
+
+Modal estilo Seazone com 5 perguntas (dias, quem viaja, vibe, locomoção, restrições opcionais). Submit → Claude com `submit_itinerary` tool calling → roteiro day-by-day estruturado (manhã/tarde/noite), exibido em cards com **duração estimada** e **distância do imóvel** por atividade. Inclui botão "Copiar texto" pra compartilhar via WhatsApp/notes e botão "Expandir" pra fullscreen no mobile.
+
+**Refinement multi-turn**: após gerar, o hóspede pode ajustar via campo "Quer ajustar algo?" ("substitua o dia 2 por algo mais cultural", "remova o Snowland, criança tem medo de frio"). Backend recebe histórico + roteiro atual + novo pedido e retorna versão revisada. Limite de 5 refinements por sessão, validador de coerência reaplica todos os guardrails.
+
+**Atalho no Chat**: o botão "Roteiro personalizado" também aparece no EmptyState do assistente virtual, dando dois caminhos pro mesmo modal (da seção Arredores ou do chat).
+
+**Camadas de guardrail anti-alucinação** (o que torna a feature defensável):
+
+1. **Allowlist de ícones por cidade**: `lib/itinerary/iconic-places.ts` lista lugares universalmente conhecidos (Cristo Redentor, Lago Negro, Praia da Joaquina) divididos em `cardinal` (sempre apropriados) + `byVibe` (filtrados pela escolha do hóspede). Fora dessa lista e do guide cacheado, Claude deve usar tipos genéricos ("café local", "trilha próxima").
+2. **Validação de raio por transporte** pós-LLM: para `walk`, rejeita activities com distância > 1,5 km ou duração a pé > 20 min. Para `car`, rejeita > 20 km ou > 30 min. Roteiros que violam são retornados com erro 502 + mensagem específica pro client.
+3. **Validação de coerência**: dias devem ser sequenciais (1..N) e bater com `request.days`. `from_guide: true` só é aceito se o lugar existe literalmente no guide cacheado.
+4. **Profile-aware**: o perfil do imóvel (coastal/mountain/urban/rural) entra no prompt — não sugere programa de praia em Gramado nem de serra em Floripa.
+5. **Não persiste**: roteiro é one-shot por sessão. Cada submit gera novo, sem armazenar. Refinements vivem só em estado React local.
+
+### 6. Mobile UX - densidade controlada
+
+Página `/[code]` no mobile reduz scroll com toggle "Mostrar mais" controlado por CSS-first (sem detecção JS de viewport):
+
+- **Arredores**: cada subseção (Restaurantes / Atrações / Essenciais) mostra 2 cards por padrão + botão `Mostrar mais (N)`.
+- **Comodidades**: 8 chips visíveis + botão `Ver todas (N)`.
+- **Desktop (≥ md)**: tudo visível sempre, botão escondido via `md:hidden`.
+
+Implementado com `hidden md:block` nos itens extras + `useState` local pra toggle. Sem `useMediaQuery` ou `window.innerWidth`, evita hydration mismatch.
 
 ---
 
@@ -172,6 +200,9 @@ Mapeamento explícito de cada validação do briefing (PDF Seazone) e como atend
 | Chat com contexto do imóvel + guide | `buildSystemPrompt` injeta todos os dados do imóvel + guia + welcome + 4 few-shot examples do PDF | [`lib/chat/prompt.ts`](lib/chat/prompt.ts) |
 | **Chat não inventa informações** | Regras anti-hallucination explícitas no system prompt + temperature 0.3 + redirect para anfitrião quando contexto não cobre | [`lib/chat/prompt.ts`](lib/chat/prompt.ts) |
 | 4 perguntas oficiais respondidas corretamente | Tests cobrem WiFi/pet/check-in/restaurantes contra fixtures FLN001 e GRM001 do PDF | [`tests/unit/lib/chat/prompt.test.ts`](tests/unit/lib/chat/prompt.test.ts) |
+| **Diferencial: roteiro personalizado por IA** | Modal com 5 perguntas + Claude com `submit_itinerary` tool + multi-turn refinement + allowlist por cidade + validação de raio | [`app/api/itinerary/route.ts`](app/api/itinerary/route.ts), [`lib/itinerary/iconic-places.ts`](lib/itinerary/iconic-places.ts) |
+| **Diferencial: multilíngue PT/EN/ES com IA-aware** | Toggle de idioma + dicionários + tradução on-demand de conteúdo gerado por Claude + chat responde no idioma | [`lib/i18n/`](lib/i18n), [`app/api/translate/route.ts`](app/api/translate/route.ts) |
+| **Diferencial: variantes de prompt por perfil do imóvel** | Resolver determinístico (`coastal`/`mountain`/`urban`/`rural`) injeta diretrizes contextuais nos prompts de guide e chat | [`lib/property-profiles.ts`](lib/property-profiles.ts) |
 
 ### Técnicos
 
@@ -184,7 +215,7 @@ Mapeamento explícito de cada validação do briefing (PDF Seazone) e como atend
 | Uso de IA (LLM) | Claude Sonnet 4.6 (Anthropic) com tool calling para geração e streaming para chat |
 | Atomic Design | Estrutura `atoms/` (SectionHeader, CopyButton, PlaceTypeBadge) → `molecules/` (AmenityChip, PlaceCard) → `organisms/` (Hero, sections, Chat) |
 | Padrões de commits | Conventional Commits para mudanças estruturais (`feat(api):`, `feat(db):`, `chore:`, `test:`, `redesign:`) e descritivos curtos para polish visual. Histórico mostra a progressão em fases |
-| Testes (diferencial) | 36 testes Vitest em 10 arquivos cobrindo schemas, helpers, queries, prompts (anti-hallucination e idioma), e route handlers |
+| Testes (diferencial) | 47 testes Vitest em 13 arquivos cobrindo schemas, helpers, queries, prompts (anti-hallucination, idioma e perfil), guardrails do itinerary (allowlist + raio + coerência) e route handlers |
 
 ---
 
@@ -215,15 +246,38 @@ Sem persistência de conversa (chat reseta ao fechar). Para o caso de uso (pergu
 
 ## Anti-hallucination strategy
 
-Cinco camadas defensivas:
+Estratégia em camadas, **calibrada por feature** (chat é mais rígido, itinerary é criativo mas com guardrails).
+
+### Chat
 
 1. **System prompt rígido** com regras numeradas (`lib/chat/prompt.ts`): "Nunca invente nomes de lugares", "Quando não souber, redirecione para o anfitrião".
 2. **Few-shot examples** dinâmicos: 4 exemplos baseados nas perguntas oficiais do PDF, gerados com os dados reais do imóvel atual (`SeaHome_FLN001` / `floripa2024` etc.).
 3. **Temperature 0.3** (baixa criatividade, alta aderência ao prompt).
-4. **Contexto verboso**: o system prompt injeta todos os dados do imóvel + guide em formato estruturado, eliminando ambiguidade.
-5. **Diretriz de personalização honesta**: quando contexto é insuficiente, instruir Claude a reconhecer a limitação em vez de inventar uma resposta "criativa".
+4. **Contexto verboso**: system prompt injeta todos os dados do imóvel + guide em formato estruturado.
+5. **Caracterização honesta**: Claude pode descrever perfil de lugares do guide (ex: "Joaquina é mais de surf") mas não pode inventar novos. Quando contexto insuficiente, reconhece limitação e redireciona.
 
-Validação manual cobre os 4 cenários do PDF (WiFi exato, pet por imóvel, check-in literal, restaurantes do guide) + edge cases (pergunta totalmente fora de escopo, perfil específico de hóspede).
+### Guide generation (agente)
+
+- **Tool calling enforça schema** no nível do SDK (não há "JSON quebrado").
+- **Restrições de curadoria** no system prompt: cidade litorânea precisa ao menos uma praia famosa; não recomendar instituições puramente acadêmicas; sem clichês de IA.
+- **Variantes por perfil**: prompt adicional baseado no profile resolver (`coastal`/`mountain`/`urban`/`rural`) prioriza recomendações sem autorizar inventar fatos.
+
+### Itinerary planner (criativo, mas validado)
+
+- **Allowlist de ícones por cidade** (`cardinal` + `byVibe`): Claude só pode mencionar nomes do guide cacheado ou dessa allowlist. Fora disso, tipos genéricos.
+- **Validador heurístico pós-LLM**: para `transport=walk` rejeita distância > 1,5 km ou tempo > 20 min; para `car` rejeita > 20 km / > 30 min.
+- **Validação de coerência**: dias sequenciais, `from_guide: true` referenciando lugar real do guide.
+- **Profile-aware**: mesmo resolver do guide aplica restrições contextuais.
+- **Refinement preserva guardrails**: o `/api/itinerary/refine` reaplica TODAS as validações no output revisado. Numeração 1..N, todos os dias presentes, `from_guide` consistente, raio respeitado.
+
+### Itinerary refinement (multi-turn com memória)
+
+- **Estado da conversa só no client**: roteiro + histórico de pedidos vivem em React state, não persistem.
+- **Limite de 5 refinements por sessão**: prevê custos descontrolados; backend retorna 429 se excedido.
+- **Histórico enviado ao modelo limitado a 4 entries recentes**: reduz overhead sem perder contexto útil.
+- **Mensagens de erro user-friendly**: validações (Zod, coerência, raio) traduzem em texto humano no client, em vez de stack trace.
+
+Validação manual cobre os 4 cenários oficiais do PDF (WiFi, pet, check-in, restaurantes) + redirecionamento honesto em personalização + raio respeitado em walk/car + refinement preservando dia 1 ao trocar dia 2.
 
 ---
 
@@ -233,13 +287,14 @@ Validação manual cobre os 4 cenários do PDF (WiFi exato, pet por imóvel, che
 npm test
 ```
 
-36 testes em 10 arquivos cobrindo:
+47 testes em 13 arquivos cobrindo:
 
-- **Schemas Zod** (`tests/unit/schemas/`): boundaries das validações de Property e ExperiencesGuide.
+- **Schemas Zod** (`tests/unit/schemas/`): boundaries das validações de Property, ExperiencesGuide e ItineraryRequest.
 - **Helpers** (`tests/unit/lib/`): `formatAddress`, `whatsappUrl`, `googleMapsUrl`, `getAmenity` fallback, classes de erro.
-- **buildSystemPrompt do chat** (`tests/unit/lib/chat/`): regras anti-hallucination, dados do imóvel injetados corretamente, diferenciação por imóvel (FLN sem pet vs GRM com pet) e idioma de resposta selecionado (PT/EN/ES).
+- **buildSystemPrompt do chat** (`tests/unit/lib/chat/`): regras anti-hallucination, dados do imóvel injetados corretamente, diferenciação por imóvel (FLN sem pet vs GRM com pet), idioma de resposta selecionado (PT/EN/ES) e profile-aware.
+- **Itinerary guardrails** (`tests/unit/lib/itinerary/`): allowlist de ícones por cidade + vibe, validação de raio por transporte (walk/car), coerência de dias sequenciais.
 - **Queries DB** (`tests/unit/db/queries.test.ts`): normalização de código (uppercase, trim), null case.
-- **Route handlers** (`tests/integration/api/`): generate-guide com mock de Anthropic/Tavily (404, cache hit, force regenerate, body inválido). Chat com mock de streamText (404, 400, prompt building correto).
+- **Route handlers** (`tests/integration/api/`): generate-guide com mock de Anthropic/Tavily (404, cache hit, force regenerate, body inválido). Chat com mock de streamText. Itinerary com mock de Claude e validação completa do output.
 
 Mocks somente nas boundaries externas (Drizzle pool, Anthropic SDK, Tavily fetch). Schemas, helpers e prompts rodam com implementação real. Nenhum teste chama API externa — toda a suíte roda offline.
 
@@ -250,41 +305,79 @@ Mocks somente nas boundaries externas (Drizzle pool, Anthropic SDK, Tavily fetch
 ```
 app/
   [code]/page.tsx              ← server component, fetch property + render
-  [code]/not-found.tsx         ← 404 customizado
+  [code]/not-found.tsx         ← 404 customizado i18n-aware
   [code]/loading.tsx           ← skeleton
-  api/generate-guide/route.ts  ← POST agentic
-  api/chat/route.ts            ← POST streaming
+  api/generate-welcome/route.ts ← POST welcome message rápido (~5s)
+  api/generate-guide/route.ts  ← POST agentic (tool calling Tavily, ~45s)
+  api/chat/route.ts            ← POST streaming chat
+  api/itinerary/route.ts       ← POST roteiro personalizado com guardrails
+  api/translate/route.ts       ← POST tradução on-demand de conteúdo gerado
   globals.css                  ← tema Seazone (paleta, fonts)
-  layout.tsx                   ← Manrope + JetBrains Mono via next/font
+  layout.tsx                   ← Manrope + JetBrains Mono + I18nProvider
 
 components/
-  atoms/                       ← primitivos puros (SectionHeader, PlaceTypeBadge, CopyButton)
-  molecules/                   ← compostos (AmenityChip, PlaceCard)
+  atoms/                       ← primitivos (SectionHeader, PlaceTypeBadge, CopyButton, LanguageSwitcher)
+  molecules/                   ← compostos (AmenityChip, PlaceCard, ItineraryDayCard)
   organisms/                   ← seções completas (Hero, Overview, Access, Rules, Contact,
-                                 NeighborhoodSection, NeighborhoodLoader, ChatWidget)
+                                 NeighborhoodSection, NeighborhoodLoader, WelcomeSection,
+                                 WelcomeLoader, ChatWidget, ItineraryTrigger, ItineraryModal,
+                                 TranslatedWelcomeSection, TranslatedNeighborhoodSection)
   ui/                          ← shadcn (button, card, badge, skeleton, input)
 
 db/
-  schema.ts                    ← tabela properties (Drizzle)
+  schema.ts                    ← tabela properties (Drizzle) + welcome_message
   client.ts                    ← pool singleton + SSL pra Render
-  queries.ts                   ← getPropertyByCode + saveExperiencesGuide
+  queries.ts                   ← getPropertyByCode + saveExperiencesGuide + saveWelcomeMessage
   seed.ts                      ← delete+insert idempotente
   schemas/property.ts          ← Zod: Address, Operational, Rules, Amenities, Host
   schemas/experiences.ts       ← Zod: Restaurant, Attraction, Essential, ExperiencesGuide
   fixtures/{fln001,grm001,bal001,rj001}.ts  ← dados literais (FLN/GRM do PDF, BAL/RJ próprios)
-  migrations/                  ← SQL gerado por drizzle-kit
+  migrations/                  ← SQL gerado por drizzle-kit (incl. welcome_message column)
 
 lib/
   anthropic.ts                 ← cliente Anthropic singleton
   tavily.ts                    ← fetch wrapper com timeout
-  experiences/                 ← geração agêntica (tools, prompts, errors, generate)
-  chat/                        ← context loader + system prompt builder
-  amenities.ts                 ← mapping amenity key → label + ícone lucide
+  property-profiles.ts         ← resolver determinístico de perfil (coastal/mountain/urban/rural)
+  welcome/                     ← geração de welcome message (~5s, sem Tavily)
+  experiences/                 ← geração agêntica do guide (tools, prompts, errors, generate)
+  chat/                        ← context loader + system prompt builder locale-aware
+  itinerary/                   ← planner: types, schema, tool, prompt, allowlist, validação, generate
+  i18n/                        ← provider, dicionários PT/EN/ES, cookies, hooks
+  amenities.ts                 ← mapping amenity key → ícone lucide (label vem do dict)
   format.ts                    ← formatAddress, whatsappUrl, googleMapsUrl
   utils.ts                     ← cn helper do shadcn
 
 tests/
-  unit/                        ← schemas, helpers, prompts, queries
-  integration/                 ← route handlers com mocks
+  unit/                        ← schemas, helpers, prompts (chat + itinerary), queries
+  integration/                 ← route handlers com mocks (generate-guide, chat, itinerary)
 ```
+
+---
+
+## What I'd do with more time
+
+Funcionalidades que ficaram fora de escopo mas estão mapeadas como próximos passos:
+
+1. **Map view com pontos do guide**: mapa interativo (Leaflet + OpenStreetMap) com pins do imóvel e dos lugares do guide. Geocoding via Nominatim em paralelo após `generate-guide`. Falta apenas implementação — desenho técnico pronto.
+2. **Persistência de chat com moderação**: tabela `chat_messages` + retenção/exclusão para LGPD. Permite o anfitrião revisar conversas e ajustar dados estáticos com base em perguntas recorrentes.
+3. **Métricas em produção**: instrumentar `[generate-guide]`, `[chat]`, `[itinerary]` com OpenTelemetry → Grafana / Vercel Analytics. Dashboards de latência por região, taxa de cache hit, custo por imóvel.
+4. **Testes E2E com Playwright**: cobrir o fluxo completo "abrir página → trigger guide → conversar com chat → gerar roteiro → refinar" em browser real. Vitest cobre o backend; Playwright fecharia o ciclo.
+5. **Streaming progressivo do guide generation**: hoje o loader espera 45s e renderiza tudo de uma vez. Daria pra streamar progressivamente (restaurantes → atrações → essenciais...) usando `createUIMessageStream` no endpoint.
+6. **Voice input + TTS no chat**: hóspede chegou cansado, fala em vez de digitar (Web Speech API). Resposta com áudio (OpenAI TTS ou ElevenLabs). Mobile-first, acessibilidade.
+7. **Pre-check-in conversacional**: substituir formulário tradicional por chat que extrai dados (chegada, qtde pessoas, preferências) e ajusta o welcome message automaticamente.
+8. **Tradução do guide persistida**: hoje tradução de conteúdo gerado roda on-demand a cada troca de idioma. Cachear no DB (coluna `experiences_guide_translations`) economizaria chamadas Anthropic em sessões repetidas.
+
+---
+
+## Sobre 
+
+ Este projeto foi feito em ~2 dias como teste técnico, aplicando os mesmos princípios de arquitetura limpa, type safety e design centrado no usuário em uma stack TypeScript + Next.js - área que estou consolidando depois de Job Radar (React/Vite) e dos meus produtos em Python.
+
+A estrutura de commits mostra a progressão da execução em fases nítidas (scaffold → schema → página → IA → chat → testes → polish → features extras). O fluxo de trabalho usou Claude como arquiteto/orquestrador, Codex como executor de código (T1, T2, T4, T6, T8, T10, T11, T13, T14, fixes) e Claude direto nas tarefas visuais (T3.5, T5, T7, T11.6, T15) - combinando design intelligence com velocidade de execução.
+
+---
+
+## Licença
+
+Projeto desenvolvido para fins de avaliação técnica. Código aberto, sem restrições de uso.
 
