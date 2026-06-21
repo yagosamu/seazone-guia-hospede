@@ -1,6 +1,6 @@
 # Seazone · Guia Digital do Hóspede
 
-Guia digital personalizado por imóvel, com curadoria local gerada por IA e assistente conversacional anti-alucinação. Construído como teste técnico AI Builder para a Seazone.
+Guia digital personalizado por imóvel, com curadoria local gerada por IA e assistente conversacional anti-alucinação. Construído como teste técnico Desenvolvedor Fullstack (AI Builder) para a Seazone.
 
 **Live demo:** https://seazone-guia-hospede-rho.vercel.app
 
