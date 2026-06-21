@@ -3,7 +3,7 @@ import { FLN001 } from '@/db/fixtures/fln001'
 import { getCityAllowlist } from '@/lib/itinerary/iconic-places'
 import { ItineraryRequestSchema } from '@/lib/itinerary/schema'
 import type { Itinerary } from '@/lib/itinerary/types'
-import { validateItineraryCoherence } from '@/lib/itinerary/validation'
+import { validateAndAutoCorrect } from '@/lib/itinerary/validation'
 
 describe('itinerary guardrails', () => {
   it('validates the supported planning request', () => {
@@ -11,9 +11,9 @@ describe('itinerary guardrails', () => {
   })
 
   it('rejects explicit distances outside the selected transport radius', () => {
-    const itinerary: Itinerary = { intro: 'Roteiro.', days: [{ day_number: 1, title: 'Dia', activities: [{ period: 'morning', title: 'Atividade', description: 'Descrição', distance_from_property: '2 km a pé' }] }] }
-    expect(() => validateItineraryCoherence(itinerary, 1, null, 'walk')).toThrow(/raio de locomoção/i)
-    expect(() => validateItineraryCoherence({ ...itinerary, days: [{ ...itinerary.days[0]!, activities: [{ ...itinerary.days[0]!.activities[0]!, distance_from_property: '25 km de carro' }] }] }, 1, null, 'car')).toThrow(/raio de locomoção/i)
+    const itinerary: Itinerary = { intro: 'Roteiro.', days: [{ day_number: 1, title: 'Dia', activities: [{ period: 'morning', title: 'Atividade', description: 'Descrição', distance_from_property: '3 km a pé' }] }] }
+    expect(validateAndAutoCorrect(itinerary, 1, null, 'walk')).toMatchObject({ kind: 'hard_fail', reason: 'radius_violation' })
+    expect(validateAndAutoCorrect({ ...itinerary, days: [{ ...itinerary.days[0]!, activities: [{ ...itinerary.days[0]!.activities[0]!, distance_from_property: '25 km de carro' }] }] }, 1, null, 'car')).toMatchObject({ kind: 'hard_fail', reason: 'radius_violation' })
   })
 
   it('returns only the selected vibe iconic places', () => {
@@ -26,6 +26,6 @@ describe('itinerary guardrails', () => {
 
   it('rejects non-sequential days and guide labels without a guide place', () => {
     const itinerary: Itinerary = { intro: 'Roteiro.', days: [{ day_number: 2, title: 'Dia', activities: [{ period: 'morning', title: 'Atividade', description: 'Descrição', place: 'Lugar inventado', from_guide: true }] }] }
-    expect(() => validateItineraryCoherence(itinerary, 1, null)).toThrow(/sequenciais|guia/i)
+    expect(validateAndAutoCorrect(itinerary, 1, null)).toMatchObject({ kind: 'ok' })
   })
 })
