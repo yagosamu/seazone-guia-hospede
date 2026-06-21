@@ -1,0 +1,12 @@
+import type Anthropic from '@anthropic-ai/sdk'
+import { ANTHROPIC_MODEL, anthropic } from '@/lib/anthropic'
+import type { Property } from '@/db/schema'
+import type { Locale } from '@/lib/i18n/types'
+import { ItineraryError } from './errors'
+import { buildRefinementSystemPrompt, buildRefinementUserPrompt } from './refine-prompt'
+import type { RefinementTurn } from './refine-schema'
+import { ItinerarySchema } from './schema'
+import { SUBMIT_ITINERARY_TOOL } from './tool'
+import type { Itinerary, ItineraryRequest } from './types'
+import { validateItineraryCoherence } from './validation'
+export async function refineItinerary(args: { property: Property; currentItinerary: Itinerary; originalRequest: ItineraryRequest; refinementMessage: string; history: RefinementTurn[]; locale: Locale }): Promise<Itinerary> { let response: Anthropic.Message; try { response = await anthropic().messages.create({ model: ANTHROPIC_MODEL, max_tokens: 3000, system: buildRefinementSystemPrompt(args.locale), tools: [SUBMIT_ITINERARY_TOOL], tool_choice: { type: 'tool', name: 'submit_itinerary' }, messages: [{ role: 'user', content: buildRefinementUserPrompt(args) }] }, { timeout: 25_000 }) } catch (e) { throw new ItineraryError('Falha na chamada Anthropic no refinement', 502, e) }; const block = response.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === 'submit_itinerary'); if (!block) throw new ItineraryError('Claude não chamou submit_itinerary no refinement', 502); const parsed = ItinerarySchema.safeParse(block.input); if (!parsed.success) throw new ItineraryError('Refined itinerary inválido', 502, parsed.error); validateItineraryCoherence(parsed.data, args.originalRequest.days, args.property.experiences_guide, args.originalRequest.transport); return parsed.data }
