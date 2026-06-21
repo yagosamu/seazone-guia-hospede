@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
-import { ArrowUp, MessageCircle, Sparkles, X } from 'lucide-react'
+import { ArrowUp, MessageCircle, RotateCcw, Sparkles, X } from 'lucide-react'
 import { interpolate, useI18n, useT } from '@/lib/i18n/provider'
 import { ItineraryModal } from './ItineraryModal'
 
@@ -37,9 +37,14 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
     [code, locale],
   )
 
-  const { messages, sendMessage, status, error, stop, regenerate } = useChat({
+  const { messages, sendMessage, setMessages, status, error, stop, regenerate } = useChat({
     transport,
   })
+
+  function handleNewConversation() {
+    setMessages([])
+    setInput('')
+  }
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
@@ -118,14 +123,27 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full p-2 transition hover:bg-white/10"
-                aria-label={t.chat.close}
-              >
-                <X className="h-4 w-4" style={{ color: '#FAFAF7' }} aria-hidden="true" />
-              </button>
+              <div className="flex shrink-0 items-center gap-1">
+                {messages.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={handleNewConversation}
+                    className="rounded-full p-2 transition hover:bg-white/10"
+                    aria-label={t.chat.newConversation}
+                    title={t.chat.newConversation}
+                  >
+                    <RotateCcw className="h-4 w-4" style={{ color: '#FAFAF7' }} aria-hidden="true" />
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-full p-2 transition hover:bg-white/10"
+                  aria-label={t.chat.close}
+                >
+                  <X className="h-4 w-4" style={{ color: '#FAFAF7' }} aria-hidden="true" />
+                </button>
+              </div>
             </header>
 
             <div
