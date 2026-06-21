@@ -54,4 +54,16 @@ describe('buildSystemPrompt anti-hallucination contract', () => {
     expect(prompt).toContain('Ana Paula')
     expect(prompt).toMatch(/travess(ão|ões)/i)
   })
+
+  it('sets a single response language instruction for the selected locale', () => {
+    const englishPrompt = buildSystemPrompt({ property: propertyFromFixture(FLN001), guide: null }, 'en')
+    const spanishPrompt = buildSystemPrompt({ property: propertyFromFixture(FLN001), guide: null }, 'es')
+
+    expect(englishPrompt).toContain('Natural conversational English')
+    expect(englishPrompt).not.toContain('Em português brasileiro')
+    expect(englishPrompt).toContain('I do not have that information about this property.')
+    expect(spanishPrompt).toContain('Español neutral hispanoamericano')
+    expect(spanishPrompt).not.toContain('Em português brasileiro')
+    expect(spanishPrompt).toContain('No tengo esa información sobre este alojamiento.')
+  })
 })
