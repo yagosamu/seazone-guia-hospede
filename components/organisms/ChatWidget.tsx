@@ -281,12 +281,24 @@ function EmptyState({
   )
 }
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*\*(.*?)\*\*\*/g, '$1')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '$1')
+    .replace(/_(.*?)_/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^[-*+]\s+/gm, '')
+}
+
 function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === 'user'
-  const text = message.parts
+  const rawText = message.parts
     .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
     .map((p) => p.text)
     .join('')
+  const text = isUser ? rawText : stripMarkdown(rawText)
 
   if (!text && !isUser) return null
 
