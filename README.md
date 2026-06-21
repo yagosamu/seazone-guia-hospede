@@ -2,7 +2,7 @@
 
 Guia digital personalizado por imóvel, com curadoria local gerada por IA e assistente conversacional anti-alucinação. Construído como teste técnico AI Builder para a Seazone.
 
-**Live demo:** _adicionar URL Vercel após deploy_
+**Live demo:** https://seazone-guia-hospede-rho.vercel.app
 **Repo:** https://github.com/yagosamu/seazone-guia-hospede
 
 Acesse `/FLN001`, `/GRM001`, `/BAL001` ou `/RJ001` para ver imóveis de exemplo.
@@ -130,7 +130,7 @@ Endpoint POST que dispara um **agente Claude com tool calling**. Fluxo:
 4. **Persistência**: salva em `properties.experiences_guide` (JSONB) com timestamp. Cache TTL 30 dias. Param `force: true` regenera.
 5. **Erros tipados**: `TavilyError` / `AnthropicError` / `ValidationError` / `MaxIterationsError` mapeados em status HTTP corretos (502/504).
 
-Resultado: para FLN001 (Floripa), o guide tem Moochacho Burritos, Le Pario, Praia da Joaquina, HU/UFSC etc. — todos reais e contextualizados. Não há nomes inventados.
+Resultado: para FLN001 (Floripa), o guide tem Moochacho Burritos, Le Pario, Praia da Joaquina, HU/UFSC etc. Todos reais e contextualizados. Não há nomes inventados.
 
 ### 3. Assistente Virtual (chat) (`/api/chat` + `ChatWidget`)
 
@@ -142,6 +142,45 @@ Chat com streaming token-a-token (`smoothStream` 18ms por palavra) e regras anti
 - Pergunta totalmente fora de escopo: resposta literal de redirect ("Não tenho essa informação sobre este imóvel...").
 
 UI: floating launcher (FAB coral) + drawer right (desktop) ou fullscreen (mobile). Quick suggestions cobrem as 4 perguntas-modelo do PDF (WiFi, pet, check-in, restaurantes). Estados completos: loading dots, streaming visível, error inline com retry.
+
+---
+
+## Compliance com requisitos
+
+Mapeamento explícito de cada validação do briefing (PDF Seazone) e como atendemos.
+
+### Funcionais
+
+| Requisito | Como atendemos | Onde |
+|---|---|---|
+| URL única por imóvel (ex: `/FLN001`) | Rota dinâmica `/[code]` server-rendered, lê do Postgres | [`app/[code]/page.tsx`](app/%5Bcode%5D/page.tsx) |
+| Erro amigável em código inexistente | Componente `not-found.tsx` customizado disparado por `notFound()` | [`app/[code]/not-found.tsx`](app/%5Bcode%5D/not-found.tsx) |
+| Responsivo mobile + desktop | Tailwind mobile-first, breakpoints `md:` e `lg:`, carrossel com swipe | Toda a UI |
+| Fotos do imóvel | Carrossel no hero com autoplay, setas, dots, swipe, pause on hover | [`components/organisms/PropertyHero.tsx`](components/organisms/PropertyHero.tsx) |
+| Dados do imóvel (tipo, capacidade, amenidades) | Seção 01 "Sobre o imóvel" com grid de stats inline + chips de comodidades em ordem padronizada | [`components/organisms/PropertyOverview.tsx`](components/organisms/PropertyOverview.tsx) |
+| Info de acesso (WiFi, smart lock, estacionamento) | Seção 02 com WiFi card destacado em coral, botão copiar senha, render condicional de estacionamento | [`components/organisms/AccessSection.tsx`](components/organisms/AccessSection.tsx) |
+| Regras (check-in/out, pet, fumar, crianças, eventos) | Seção 03 com badges semânticos (teal permitido / coral negado) e copy humano por contexto | [`components/organisms/RulesSection.tsx`](components/organisms/RulesSection.tsx) |
+| Contato (nome + telefone do anfitrião, endereço) | Seção 05 com avatar de iniciais, botão WhatsApp formatado, link Google Maps do endereço | [`components/organisms/ContactSection.tsx`](components/organisms/ContactSection.tsx) |
+| Guia de Experiências contextualizado pelo endereço real | Agente Claude com tool calling Tavily descobre lugares reais da região + welcome separado | [`lib/experiences/generate.ts`](lib/experiences/generate.ts), [`lib/welcome/generate.ts`](lib/welcome/generate.ts) |
+| **Guia persistido — não regenerado a cada acesso** | Colunas `experiences_guide` JSONB + `experiences_generated_at` em `properties`. Cache TTL 30 dias. Cache hit em <50ms (latência DB) | [`db/schema.ts`](db/schema.ts), [`app/api/generate-guide/route.ts`](app/api/generate-guide/route.ts) |
+| **Feedback visual claro durante geração** | `WelcomeLoader` e `NeighborhoodLoader` com spinner, mensagens em estágios temporais ("Personalizando" → "Curando recomendações" → "Finalizando"), skeleton estruturado | [`components/organisms/WelcomeLoader.tsx`](components/organisms/WelcomeLoader.tsx), [`components/organisms/NeighborhoodLoader.tsx`](components/organisms/NeighborhoodLoader.tsx) |
+| Chat em tempo real (streaming) | Vercel AI SDK `streamText` + `smoothStream` (18ms por palavra), texto chega progressivo | [`app/api/chat/route.ts`](app/api/chat/route.ts) |
+| Chat com contexto do imóvel + guide | `buildSystemPrompt` injeta todos os dados do imóvel + guia + welcome + 4 few-shot examples do PDF | [`lib/chat/prompt.ts`](lib/chat/prompt.ts) |
+| **Chat não inventa informações** | Regras anti-hallucination explícitas no system prompt + temperature 0.3 + redirect para anfitrião quando contexto não cobre | [`lib/chat/prompt.ts`](lib/chat/prompt.ts) |
+| 4 perguntas oficiais respondidas corretamente | Tests cobrem WiFi/pet/check-in/restaurantes contra fixtures FLN001 e GRM001 do PDF | [`tests/unit/lib/chat/prompt.test.ts`](tests/unit/lib/chat/prompt.test.ts) |
+
+### Técnicos
+
+| Requisito | Como atendemos |
+|---|---|
+| Next.js | Next 16 (App Router) com Server Components |
+| TypeScript | strict mode + `noUncheckedIndexedAccess` + `noImplicitOverride` |
+| Tailwind CSS | v4 com `@theme inline` e tokens semânticos (paleta Seazone azul + coral) |
+| Banco de dados | Postgres no Render, Drizzle ORM, schema com JSONB tipado via Zod |
+| Uso de IA (LLM) | Claude Sonnet 4.6 (Anthropic) com tool calling para geração e streaming para chat |
+| Atomic Design | Estrutura `atoms/` (SectionHeader, CopyButton, PlaceTypeBadge) → `molecules/` (AmenityChip, PlaceCard) → `organisms/` (Hero, sections, Chat) |
+| Padrões de commits | Conventional Commits para mudanças estruturais (`feat(api):`, `feat(db):`, `chore:`, `test:`, `redesign:`) e descritivos curtos para polish visual. Histórico mostra a progressão em fases |
+| Testes (diferencial) | 35 testes Vitest em 10 arquivos cobrindo schemas, helpers, queries, prompts (anti-hallucination) e route handlers |
 
 ---
 
@@ -245,29 +284,4 @@ tests/
   integration/                 ← route handlers com mocks
 ```
 
----
 
-## What I'd do with more time
-
-1. **i18n**: extrair strings para arquivos JSON + suporte a inglês e espanhol (uso de `next-intl`). O Seazone atende hóspedes internacionais.
-2. **Geração paralela no seed**: rodar geração do guide para todos os imóveis durante seed, em vez de on-demand. Elimina o loading de 45s no primeiro acesso.
-3. **Coordenadas + mapa estático**: armazenar lat/lng do imóvel e renderizar mapa estático na seção de contato (Mapbox static API).
-4. **Persistência de chat com moderação**: tabela `chat_messages` + retenção/exclusão para LGPD. Permite o anfitrião revisar conversas e ajustar dados estáticos com base em perguntas recorrentes.
-5. **Métricas em produção**: instrumentar `[generate-guide]` e `[chat]` com OpenTelemetry → Grafana / Vercel Analytics. Dashboards de latência por região, taxa de cache hit, custo por imóvel.
-6. **Testes E2E com Playwright**: cobrir o fluxo completo "abrir página → trigger guide → conversar com chat" em browser real. Vitest cobre o backend; Playwright fecharia o ciclo.
-7. **Streaming do guide generation**: hoje o loader espera 45s e renderiza tudo de uma vez. Daria pra streamar progressivamente (welcome → restaurantes → atrações...) usando `createUIMessageStream` no endpoint.
-8. **Variantes de prompt por tipo de imóvel**: praia, serra, urbano, rural. Hoje o prompt é genérico; segmentar geraria curadoria ainda mais relevante.
-
----
-
-## Sobre o desenvolvedor
-
-Yago é desenvolvedor Python há 4+ anos, com dois SaaS em produção (JuriAI e Fluxa Comex) e foco em LLMs aplicados (agentic-ecommerce-analytics, LangGraph + CrewAI). Este projeto foi feito em ~3 dias úteis como teste técnico, aplicando os mesmos princípios de arquitetura limpa, type safety e design centrado no usuário em uma stack TypeScript + Next.js — área que estou consolidando depois de Job Radar (React/Vite) e dos meus produtos em Python.
-
-A estrutura de commits mostra a progressão da execução em fases nítidas (scaffold → schema → página → IA → chat → testes → polish). O fluxo de trabalho usou Claude como arquiteto/orquestrador, Codex como executor de código (T1, T2, T4, T6, T8) e Claude direto nas tarefas visuais (T3.5, T5, T7) — combinando design intelligence com velocidade de execução.
-
----
-
-## Licença
-
-Projeto desenvolvido para fins de avaliação técnica. Código aberto, sem restrições de uso.
