@@ -35,7 +35,7 @@ A Seazone gerencia mais de 3.000 imóveis no Brasil. O guia atual do hóspede é
 URL única por imóvel (`/FLN001`) com cinco camadas, **três direcionadas por IA**:
 
 1. **Visualização estática**: dados do imóvel renderizados via Server Components direto do Postgres.
-2. **Boas-vindas + Guia de Experiências gerados por IA** _(AI)_: dois endpoints — welcome rápido (~5s, sem Tavily) e guide completo via agente Claude com tool calling a Tavily (descobre lugares reais, ~45s). Ambos persistidos no banco (cache 30 dias). Curadoria é ajustada por **perfil do imóvel** (coastal/mountain/urban/rural) detectado automaticamente.
+2. **Boas-vindas + Guia de Experiências gerados por IA** _(AI)_: dois endpoints, welcome rápido (~5s, sem Tavily) e guide completo via agente Claude com tool calling a Tavily (descobre lugares reais, ~45s). Ambos persistidos no banco (cache 30 dias). Curadoria é ajustada por **perfil do imóvel** (coastal/mountain/urban/rural) detectado automaticamente.
 3. **Assistente virtual streaming** _(AI)_: chat com Claude que responde usando apenas o contexto do imóvel + guide, com regras anti-alucinação explícitas. Caracteriza lugares do guide com conhecimento geral, mas redireciona pro anfitrião quando contexto não cobre.
 4. **Roteiro personalizado** _(AI)_: planner que monta itinerário day-by-day a partir de 5 preferências do hóspede (dias, perfil, vibe, locomoção, restrições). Guardrails de raio por transporte (`a pé` ≤ 1,5 km, `carro` ≤ 20 km), allowlist de ícones por cidade e validação de coerência pós-Zod garantem que a IA não invente lugares nem viole o raio escolhido.
 5. **Multilíngue (PT/EN/ES)**: toggle no topo da página. UI traduzida, conteúdo gerado por IA é traduzido on-demand, e o chat responde no idioma escolhido com termos regionais naturais.
@@ -144,7 +144,7 @@ Server Component que lê o imóvel via Drizzle direto do Postgres. Layout segue 
 Endpoint POST que dispara um **agente Claude com tool calling**. Fluxo:
 
 1. **Pre-fetch otimizado**: 3 buscas Tavily paralelas (restaurantes / atrações / essenciais) viram contexto inicial.
-2. **Loop agêntico** (até 8 iterações): Claude recebe duas tools — `tavily_search` (para complementar com info específica) e `submit_guide` (entrega final estruturada). Tipicamente conclui em 2 iterações, com 1-2 buscas complementares quando necessário.
+2. **Loop agêntico** (até 8 iterações): Claude recebe duas tools, `tavily_search` (para complementar com info específica) e `submit_guide` (entrega final estruturada). Tipicamente conclui em 2 iterações, com 1-2 buscas complementares quando necessário.
 3. **Validação defensiva**: input do `submit_guide` revalidado com Zod (schema enforcement do Anthropic + validação extra).
 4. **Persistência**: salva em `properties.experiences_guide` (JSONB) com timestamp. Cache TTL 30 dias. Param `force: true` regenera.
 5. **Erros tipados**: `TavilyError` / `AnthropicError` / `ValidationError` / `MaxIterationsError` mapeados em status HTTP corretos (502/504).
@@ -179,7 +179,7 @@ Modal estilo Seazone com 5 perguntas (dias, quem viaja, vibe, locomoção, restr
 1. **Allowlist de ícones por cidade**: `lib/itinerary/iconic-places.ts` lista lugares universalmente conhecidos (Cristo Redentor, Lago Negro, Praia da Joaquina) divididos em `cardinal` (sempre apropriados) + `byVibe` (filtrados pela escolha do hóspede). Fora dessa lista e do guide cacheado, Claude deve usar tipos genéricos ("café local", "trilha próxima").
 2. **Validação de raio por transporte** pós-LLM: para `walk`, rejeita activities com distância > 1,5 km ou duração a pé > 20 min. Para `car`, rejeita > 20 km ou > 30 min. Roteiros que violam são retornados com erro 502 + mensagem específica pro client.
 3. **Validação de coerência**: dias devem ser sequenciais (1..N) e bater com `request.days`. `from_guide: true` só é aceito se o lugar existe literalmente no guide cacheado.
-4. **Profile-aware**: o perfil do imóvel (coastal/mountain/urban/rural) entra no prompt — não sugere programa de praia em Gramado nem de serra em Floripa.
+4. **Profile-aware**: o perfil do imóvel (coastal/mountain/urban/rural) entra no prompt, sem sugerir programa de praia em Gramado nem de serra em Floripa.
 5. **Não persiste**: roteiro é one-shot por sessão. Cada submit gera novo, sem armazenar. Refinements vivem só em estado React local.
 
 ### 6. Mobile UX - densidade controlada
@@ -211,7 +211,7 @@ Mapeamento explícito de cada validação do briefing (PDF Seazone) e como atend
 | Regras (check-in/out, pet, fumar, crianças, eventos) | Seção 03 com badges semânticos (teal permitido / coral negado) e copy humano por contexto | [`components/organisms/RulesSection.tsx`](components/organisms/RulesSection.tsx) |
 | Contato (nome + telefone do anfitrião, endereço) | Seção 05 com avatar de iniciais, botão WhatsApp formatado, link Google Maps do endereço | [`components/organisms/ContactSection.tsx`](components/organisms/ContactSection.tsx) |
 | Guia de Experiências contextualizado pelo endereço real | Agente Claude com tool calling Tavily descobre lugares reais da região + welcome separado | [`lib/experiences/generate.ts`](lib/experiences/generate.ts), [`lib/welcome/generate.ts`](lib/welcome/generate.ts) |
-| **Guia persistido — não regenerado a cada acesso** | Colunas `experiences_guide` JSONB + `experiences_generated_at` em `properties`. Cache TTL 30 dias. Cache hit em <50ms (latência DB) | [`db/schema.ts`](db/schema.ts), [`app/api/generate-guide/route.ts`](app/api/generate-guide/route.ts) |
+| **Guia persistido, não regenerado a cada acesso** | Colunas `experiences_guide` JSONB + `experiences_generated_at` em `properties`. Cache TTL 30 dias. Cache hit em <50ms (latência DB) | [`db/schema.ts`](db/schema.ts), [`app/api/generate-guide/route.ts`](app/api/generate-guide/route.ts) |
 | **Feedback visual claro durante geração** | `WelcomeLoader` e `NeighborhoodLoader` com spinner, mensagens em estágios temporais ("Personalizando" → "Curando recomendações" → "Finalizando"), skeleton estruturado | [`components/organisms/WelcomeLoader.tsx`](components/organisms/WelcomeLoader.tsx), [`components/organisms/NeighborhoodLoader.tsx`](components/organisms/NeighborhoodLoader.tsx) |
 | Chat em tempo real (streaming) | Vercel AI SDK `streamText` + `smoothStream` (18ms por palavra), texto chega progressivo | [`app/api/chat/route.ts`](app/api/chat/route.ts) |
 | Chat com contexto do imóvel + guide | `buildSystemPrompt` injeta todos os dados do imóvel + guia + welcome + 4 few-shot examples do PDF | [`lib/chat/prompt.ts`](lib/chat/prompt.ts) |
@@ -313,7 +313,7 @@ npm test
 - **Queries DB** (`tests/unit/db/queries.test.ts`): normalização de código (uppercase, trim), null case.
 - **Route handlers** (`tests/integration/api/`): generate-guide com mock de Anthropic/Tavily (404, cache hit, force regenerate, body inválido). Chat com mock de streamText. Itinerary com mock de Claude e validação completa do output.
 
-Mocks somente nas boundaries externas (Drizzle pool, Anthropic SDK, Tavily fetch). Schemas, helpers e prompts rodam com implementação real. Nenhum teste chama API externa — toda a suíte roda offline.
+Mocks somente nas boundaries externas (Drizzle pool, Anthropic SDK, Tavily fetch). Schemas, helpers e prompts rodam com implementação real. Nenhum teste chama API externa, toda a suíte roda offline.
 
 ---
 
