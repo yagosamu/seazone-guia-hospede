@@ -106,8 +106,8 @@ export function ItineraryModal({ code, onClose }: ItineraryModalProps) {
         body: JSON.stringify(payload),
       })
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { message?: string }
-        throw new Error(data.message ?? 'failed')
+        const data = (await res.json().catch(() => ({}))) as { message?: string; reason?: string }
+        throw new Error((data.reason && t.itinerary.error.reasons?.[data.reason]) ?? data.message ?? 'failed')
       }
       const data = (await res.json()) as { itinerary: Itinerary }
       setItinerary(data.itinerary)
@@ -141,8 +141,8 @@ export function ItineraryModal({ code, onClose }: ItineraryModalProps) {
         }),
       })
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { message?: string }
-        throw new Error(data.message ?? 'refine_failed')
+        const data = (await res.json().catch(() => ({}))) as { message?: string; reason?: string }
+        throw new Error((data.reason && t.itinerary.error.reasons?.[data.reason]) ?? data.message ?? 'refine_failed')
       }
       const data = (await res.json()) as { itinerary: Itinerary }
       setItinerary(data.itinerary)

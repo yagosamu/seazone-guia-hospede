@@ -16,7 +16,7 @@ export function validateAndAutoCorrect(itinerary: Itinerary, requestedDays: numb
     const text = `${activity.title} ${activity.place ?? ''}`.toLowerCase()
     if (profiles.includes('mountain') && /praia|beach/.test(text)) return { kind: 'hard_fail', reason: 'profile_violation' }
     if (profiles.includes('coastal') && /montanha|mountain/.test(text)) return { kind: 'hard_fail', reason: 'profile_violation' }
-    if (activity.distance_from_property && outsideRadius(activity.distance_from_property, transport)) return { kind: 'hard_fail', reason: 'radius_violation' }
+    if (activity.distance_from_property && outsideRadius(activity.distance_from_property, transport)) console.warn(`[itinerary] transport preference exceeded: ${activity.distance_from_property}`)
   }
   return { kind: 'ok', itinerary: corrected }
 }
