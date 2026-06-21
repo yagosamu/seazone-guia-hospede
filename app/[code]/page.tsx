@@ -64,7 +64,7 @@ export default async function PropertyPage({ params }: PageProps) {
 
       <SectionBand tone="paper">
         {guide ? (
-          <TranslatedNeighborhoodSection guide={guide} sectionNumber="04" />
+          <TranslatedNeighborhoodSection guide={guide} sectionNumber="04" code={property.code} />
         ) : (
           <NeighborhoodLoader code={property.code} sectionNumber="04" />
         )}

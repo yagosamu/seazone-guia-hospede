@@ -6,13 +6,15 @@ import type { ExperiencesGuide } from '@/db/schemas/experiences'
 import { SectionHeader } from '@/components/atoms/SectionHeader'
 import { PlaceTypeBadge } from '@/components/atoms/PlaceTypeBadge'
 import { PlaceCard } from '@/components/molecules/PlaceCard'
+import { ItineraryTrigger } from './ItineraryTrigger'
 
 type NeighborhoodSectionProps = {
   guide: ExperiencesGuide
   sectionNumber: string
+  code: string
 }
 
-export function NeighborhoodSection({ guide, sectionNumber }: NeighborhoodSectionProps) {
+export function NeighborhoodSection({ guide, sectionNumber, code }: NeighborhoodSectionProps) {
   const t = useT()
   return (
     <section className="space-y-10">
@@ -93,6 +95,8 @@ export function NeighborhoodSection({ guide, sectionNumber }: NeighborhoodSectio
           </div>
         </div>
       </aside>
+
+      <div className="flex justify-center pt-1"><ItineraryTrigger code={code} /></div>
     </section>
   )
 }
