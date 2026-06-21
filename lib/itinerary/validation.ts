@@ -1,5 +1,6 @@
 import type { ExperiencesGuide } from '@/db/schemas/experiences'
 import type { Itinerary, Transport } from './types'
+import { ItineraryError } from './errors'
 
 export type ValidationResult = { kind: 'ok'; itinerary: Itinerary } | { kind: 'hard_fail'; reason: 'radius_violation' | 'profile_violation' | 'general' }
 
@@ -22,4 +23,4 @@ export function validateAndAutoCorrect(itinerary: Itinerary, requestedDays: numb
 
 function outsideRadius(value: string, transport: Transport): boolean { if (transport === 'mixed') return false; const v=value.toLowerCase().replace(',', '.'); const km=Number(v.match(/(\d+(?:\.\d+)?)\s*km/)?.[1] ?? 0); const min=Number(v.match(/(\d+)\s*min/)?.[1] ?? 0); return transport === 'walk' ? km > 2.5 || (/a pé|bicicleta/.test(v) && min > 30) : km > 20 || (/(carro|uber)/.test(v) && min > 30) }
 
-export function validateItineraryCoherence(itinerary: Itinerary, requestedDays: number, guide: ExperiencesGuide | null, transport: Transport = 'mixed'): void { const result=validateAndAutoCorrect(itinerary,requestedDays,guide,transport); if(result.kind==='hard_fail') throw new Error(result.reason) }
+export function validateItineraryCoherence(itinerary: Itinerary, requestedDays: number, guide: ExperiencesGuide | null, transport: Transport = 'mixed'): void { const result=validateAndAutoCorrect(itinerary,requestedDays,guide,transport); if(result.kind==='hard_fail') throw new ItineraryError(result.reason, 422) }

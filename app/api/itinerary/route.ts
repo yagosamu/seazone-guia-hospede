@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   try {
     return NextResponse.json({ itinerary: await generateItinerary(property, itineraryRequest, locale) })
   } catch (error) {
-    if (error instanceof ItineraryError) return NextResponse.json({ error: error.name, message: error.message }, { status: error.statusCode })
+    if (error instanceof ItineraryError) return NextResponse.json({ error: error.name, message: error.message, reason: error.message }, { status: error.statusCode })
     console.error('[itinerary] unknown error', error)
     return NextResponse.json({ error: 'internal_error' }, { status: 500 })
   }
