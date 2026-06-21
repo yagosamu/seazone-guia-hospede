@@ -16,6 +16,7 @@ export const runtime = 'nodejs'
 const BodySchema = z.object({
   code: z.string().min(1),
   messages: z.array(z.any()).min(1),
+  locale: z.enum(['pt', 'en', 'es']).optional().default('pt'),
 })
 
 export async function POST(request: Request) {
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
   try {
     const result = streamText({
       model: anthropic('claude-sonnet-4-6'),
-      system: buildSystemPrompt(context),
+      system: buildSystemPrompt(context, parsed.data.locale),
       messages: await convertToModelMessages(parsed.data.messages as UIMessage[]),
       temperature: 0.3,
       maxOutputTokens: 600,

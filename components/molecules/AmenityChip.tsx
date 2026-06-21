@@ -1,11 +1,16 @@
+'use client'
+
 import { getAmenity } from '@/lib/amenities'
+import { useT } from '@/lib/i18n/provider'
 
 type AmenityChipProps = {
   amenityKey: string
 }
 
 export function AmenityChip({ amenityKey }: AmenityChipProps) {
-  const { icon: Icon, label } = getAmenity(amenityKey)
+  const { icon: Icon, label: fallback } = getAmenity(amenityKey)
+  const t = useT()
+  const label = t.amenities[amenityKey] ?? fallback
 
   return (
     <span

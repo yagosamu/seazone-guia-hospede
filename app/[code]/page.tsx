@@ -4,12 +4,13 @@ import { AccessSection } from '@/components/organisms/AccessSection'
 import { ChatWidget } from '@/components/organisms/ChatWidget'
 import { ContactSection } from '@/components/organisms/ContactSection'
 import { NeighborhoodLoader } from '@/components/organisms/NeighborhoodLoader'
-import { NeighborhoodSection } from '@/components/organisms/NeighborhoodSection'
+import { TranslatedNeighborhoodSection } from '@/components/organisms/TranslatedNeighborhoodSection'
 import { PropertyHero } from '@/components/organisms/PropertyHero'
 import { PropertyOverview } from '@/components/organisms/PropertyOverview'
 import { RulesSection } from '@/components/organisms/RulesSection'
 import { WelcomeLoader } from '@/components/organisms/WelcomeLoader'
-import { WelcomeSection } from '@/components/organisms/WelcomeSection'
+import { TranslatedWelcomeSection } from '@/components/organisms/TranslatedWelcomeSection'
+import { LanguageSwitcher } from '@/components/atoms/LanguageSwitcher'
 import { getPropertyByCode } from '@/db/queries'
 
 type PageProps = { params: Promise<{ code: string }> }
@@ -37,12 +38,13 @@ export default async function PropertyPage({ params }: PageProps) {
   const welcome = property.welcome_message ?? null
 
   return (
-    <main className="flex flex-col">
+    <main className="relative flex flex-col">
+      <div className="absolute top-4 right-4 z-30 md:top-6 md:right-8"><LanguageSwitcher /></div>
       <PropertyHero property={property} />
 
       <SectionBand tone="paper">
         {welcome ? (
-          <WelcomeSection message={welcome} />
+          <TranslatedWelcomeSection message={welcome} />
         ) : (
           <WelcomeLoader code={property.code} />
         )}
@@ -62,7 +64,7 @@ export default async function PropertyPage({ params }: PageProps) {
 
       <SectionBand tone="paper">
         {guide ? (
-          <NeighborhoodSection guide={guide} sectionNumber="04" />
+          <TranslatedNeighborhoodSection guide={guide} sectionNumber="04" />
         ) : (
           <NeighborhoodLoader code={property.code} sectionNumber="04" />
         )}

@@ -1,10 +1,14 @@
+'use client'
+
 import { Sparkles } from 'lucide-react'
+import { useT } from '@/lib/i18n/provider'
 
 type WelcomeSectionProps = {
   message: string
 }
 
 export function WelcomeSection({ message }: WelcomeSectionProps) {
+  const t = useT()
   return (
     <section className="flex flex-col gap-5 md:flex-row md:items-start md:gap-6">
       <div
@@ -18,7 +22,7 @@ export function WelcomeSection({ message }: WelcomeSectionProps) {
           className="text-[10px] font-semibold tracking-[0.22em] uppercase"
           style={{ color: '#FF6B5B' }}
         >
-          Boas-vindas
+          {t.welcome.eyebrow}
         </p>
         <p className="text-foreground max-w-2xl text-base leading-relaxed md:text-lg md:leading-[1.65]">
           {message}

@@ -4,6 +4,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
 import { ArrowUp, MessageCircle, Sparkles, X } from 'lucide-react'
+import { interpolate, useI18n } from '@/lib/i18n/provider'
 
 type ChatWidgetProps = {
   code: string
@@ -13,14 +14,11 @@ type ChatWidgetProps = {
 
 type Suggestion = { id: string; label: string; prompt: string }
 
-const SUGGESTIONS: Suggestion[] = [
-  { id: 'wifi', label: 'Senha do WiFi', prompt: 'Qual a senha do WiFi?' },
-  { id: 'checkin', label: 'Horário do check-in', prompt: 'A que horas posso fazer check-in?' },
-  { id: 'pet', label: 'Posso trazer pet?', prompt: 'Posso trazer meu cachorro?' },
-  { id: 'food', label: 'Restaurantes perto', prompt: 'Que restaurantes ficam perto?' },
-]
-
 export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProps) {
+  const { locale, t } = useI18n()
+  const suggestions: Suggestion[] = [
+    { id: 'wifi', label: t.chat.wifi, prompt: t.chat.wifi }, { id: 'checkin', label: t.chat.checkin, prompt: t.chat.checkin }, { id: 'pet', label: t.chat.pet, prompt: t.chat.pet }, { id: 'food', label: t.chat.food, prompt: t.chat.food },
+  ]
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const titleId = useId()
@@ -31,10 +29,10 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
       new DefaultChatTransport({
         api: '/api/chat',
         prepareSendMessagesRequest: ({ messages }) => ({
-          body: { code, messages },
+          body: { code, messages, locale },
         }),
       }),
-    [code],
+    [code, locale],
   )
 
   const { messages, sendMessage, status, error, stop, regenerate } = useChat({
@@ -136,7 +134,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
               {messages.length === 0 ? (
                 <EmptyState
                   hostFirstName={hostFirstName}
-                  suggestions={SUGGESTIONS}
+                  suggestions={suggestions}
                   onPick={(prompt) => handleSubmit(prompt)}
                 />
               ) : (

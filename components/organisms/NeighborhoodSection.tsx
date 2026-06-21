@@ -1,4 +1,7 @@
+'use client'
+
 import { Sparkles } from 'lucide-react'
+import { interpolate, useT } from '@/lib/i18n/provider'
 import type { ExperiencesGuide } from '@/db/schemas/experiences'
 import { SectionHeader } from '@/components/atoms/SectionHeader'
 import { PlaceTypeBadge } from '@/components/atoms/PlaceTypeBadge'
@@ -10,16 +13,17 @@ type NeighborhoodSectionProps = {
 }
 
 export function NeighborhoodSection({ guide, sectionNumber }: NeighborhoodSectionProps) {
+  const t = useT()
   return (
     <section className="space-y-10">
       <SectionHeader
         number={sectionNumber}
-        eyebrow="Arredores"
-        title="O que vale a pena conhecer ao redor"
-        description="Os melhores lugares perto, escolhidos a dedo."
+        eyebrow={t.neighborhood.eyebrow}
+        title={t.neighborhood.title}
+        description={t.neighborhood.description}
       />
 
-      <SubSection title="Restaurantes" subtitle={`${guide.restaurants.length} opções selecionadas`}>
+      <SubSection title={t.neighborhood.restaurants} subtitle={interpolate(t.neighborhood.selected, { n: guide.restaurants.length })}>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
           {guide.restaurants.map((r, idx) => (
             <PlaceCard
@@ -33,7 +37,7 @@ export function NeighborhoodSection({ guide, sectionNumber }: NeighborhoodSectio
         </div>
       </SubSection>
 
-      <SubSection title="Atrações" subtitle={`${guide.attractions.length} pontos imperdíveis`}>
+      <SubSection title={t.neighborhood.attractions} subtitle={interpolate(t.neighborhood.points, { n: guide.attractions.length })}>
         <div className="grid gap-4 md:grid-cols-2">
           {guide.attractions.map((a, idx) => (
             <PlaceCard
@@ -47,7 +51,7 @@ export function NeighborhoodSection({ guide, sectionNumber }: NeighborhoodSectio
         </div>
       </SubSection>
 
-      <SubSection title="Essenciais" subtitle="Serviços indispensáveis no bairro">
+      <SubSection title={t.neighborhood.essentials} subtitle={t.neighborhood.essentialSubtitle}>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {guide.essentials.map((e, idx) => (
             <PlaceCard
@@ -83,7 +87,7 @@ export function NeighborhoodSection({ guide, sectionNumber }: NeighborhoodSectio
               className="text-[10px] font-bold tracking-[0.22em] uppercase"
               style={{ color: '#FF6B5B' }}
             >
-              Dica da estação
+              {t.neighborhood.seasonalTip}
             </p>
             <p className="text-[15px] leading-relaxed md:text-base">{guide.seasonal_tips}</p>
           </div>

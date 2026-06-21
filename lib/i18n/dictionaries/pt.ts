@@ -1,0 +1,18 @@
+import type { Dictionary } from '../types'
+
+export const pt = {
+  languageSwitcher: { label: 'Idioma', pt: 'PT', en: 'EN', es: 'ES' },
+  hero: { welcomeTo: 'Bem-vindo a', checkIn: 'Check-in', checkOut: 'Check-out', access: 'Acesso', accessLabels: { smart_lock: 'Fechadura digital', keybox: 'Cofre de chaves', reception: 'Recepção 24h', in_person: 'Entrega presencial', other: 'Outro tipo de acesso' } },
+  overview: { eyebrow: 'Sobre o imóvel', amenities: 'Comodidades', title: '{type} de {bedrooms} para até {guests}', bedrooms: '{n} quartos', bathrooms: '{n} banheiros', guests: '{n} hóspedes' },
+  access: { eyebrow: 'Conexão e acesso', title: 'Tudo o que você precisa para chegar', entry: 'Entrada', parking: 'Estacionamento', code: 'código', wifi: 'WiFi', network: 'Rede', password: 'Senha', copy: 'Copiar', copied: 'Copiado' },
+  rules: { eyebrow: 'Regras da estadia', title: 'O que você pode esperar deste imóvel', description: 'Check-in a partir das {checkIn} e check-out até as {checkOut}.', children: ['Crianças bem-vindas', 'Não adequado para crianças'], babies: ['Bebês acomodados', 'Não adequado para bebês'], pet: ['Pets permitidos', 'Animais não permitidos'], smoking: ['Fumar permitido', 'Não é permitido fumar'], events: ['Eventos permitidos', 'Eventos não permitidos'] },
+  neighborhood: { eyebrow: 'Arredores', title: 'O que vale a pena conhecer ao redor', description: 'Os melhores lugares perto, escolhidos a dedo.', restaurants: 'Restaurantes', attractions: 'Atrações', essentials: 'Essenciais', selected: '{n} opções selecionadas', points: '{n} pontos imperdíveis', essentialSubtitle: 'Serviços indispensáveis no bairro', seasonalTip: 'Dica da estação' },
+  welcome: { eyebrow: 'Boas-vindas' },
+  welcomeLoader: { error: 'Não conseguimos gerar a mensagem de boas-vindas agora.', retry: 'Tentar novamente', stages: ['Personalizando a sua experiência', 'Adaptando a mensagem ao seu bairro', 'Quase pronto'] },
+  neighborhoodLoader: { error: 'Não conseguimos gerar o guia agora. Tente novamente.', retry: 'Tentar novamente', stages: ['Buscando lugares reais perto do imóvel', 'Curando recomendações personalizadas', 'Finalizando o guia da região', 'Quase pronto, polindo as descrições'] },
+  contact: { eyebrow: 'Contato e endereço', title: 'Conte com seu anfitrião', description: 'Qualquer dúvida durante a estadia, fale direto com quem cuida do imóvel.', host: 'Anfitrião', address: 'Endereço', whatsapp: 'Falar no WhatsApp', maps: 'Ver no Google Maps' },
+  chat: { launcher: 'Assistente', title: 'Assistente Seazone', close: 'Fechar', emptyTitle: 'Como posso ajudar na sua estadia?', emptyDescription: 'Pergunte sobre WiFi, regras, horários ou dicas da região. Respondo na hora com base nos dados deste imóvel.', placeholder: 'Pergunte sobre o imóvel...', footer: 'Respostas baseadas nos dados deste imóvel. Para casos urgentes, fale direto com {hostName}.', wifi: 'Senha do WiFi', checkin: 'Horário do check-in', pet: 'Posso trazer pet?', food: 'Restaurantes perto', error: 'Não consegui responder. Tente de novo em instantes.', retry: 'Tentar' },
+  notFound: { title: 'Imóvel não encontrado', description: 'Verifique o código no e-mail da sua reserva.', cta: 'Voltar ao início' },
+  amenities: { wifi: 'WiFi', tv: 'TV', air_conditioning: 'Ar-condicionado', kitchen: 'Cozinha equipada', washing_machine: 'Máquina de lavar', elevator: 'Elevador', balcony: 'Varanda', pool: 'Piscina', gym: 'Academia', sea_view: 'Vista para o mar', doorman_24h: 'Portaria 24h', bbq_grill: 'Churrasqueira', dishwasher: 'Lava-louças' },
+  placeTypes: { pharmacy: 'Farmácia', market: 'Mercado', hospital: 'Hospital', gas_station: 'Posto', bank: 'Banco', other: 'Outros' },
+} satisfies Dictionary

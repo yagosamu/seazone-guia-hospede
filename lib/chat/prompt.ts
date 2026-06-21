@@ -1,7 +1,8 @@
 import type { ExperiencesGuide } from '@/db/schemas/experiences'
 import type { ChatContext } from './context'
+import type { Locale } from '@/lib/i18n/types'
 
-export function buildSystemPrompt(context: ChatContext): string {
+export function buildSystemPrompt(context: ChatContext, locale: Locale = 'pt'): string {
   const { property, guide } = context
   const { address, operational, rules, amenities, host } = property
   const amenitiesList = Object.entries(amenities)
@@ -19,7 +20,10 @@ export function buildSystemPrompt(context: ChatContext): string {
     ? formatGuideForPrompt(guide, property.welcome_message)
     : '(O guia de experiências ainda não foi gerado para este imóvel. Se a pergunta for sobre restaurantes, atrações ou serviços próximos, informe que o guia ainda está sendo preparado.)'
 
-  return `Você é o assistente virtual do guia digital Seazone para o imóvel ${property.code} (${property.name}).
+  const language = { pt: 'Português brasileiro natural, como um amigo local.', en: 'Natural conversational English. Keep place names in Portuguese.', es: 'Español neutral hispanoamericano. Conserva los nombres de lugares en portugués.' }[locale]
+  return `RESPOND IN: ${language}
+
+Você é o assistente virtual do guia digital Seazone para o imóvel ${property.code} (${property.name}).
 
 REGRAS ABSOLUTAS:
 1. Responda com base nos DADOS DO IMÓVEL e GUIA DE EXPERIÊNCIAS abaixo. Nunca invente NOMES de lugares (restaurantes, atrações, serviços) que não estão no contexto.
