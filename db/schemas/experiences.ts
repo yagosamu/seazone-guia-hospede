@@ -31,7 +31,7 @@ export const EssentialSchema = z.object({
 export const ExperiencesGuideSchema = z.object({
   restaurants: z.array(RestaurantSchema).min(4).max(5),
   attractions: z.array(AttractionSchema).min(3).max(4),
-  essentials: z.array(EssentialSchema).min(3),
+  essentials: z.array(EssentialSchema).length(3),
   seasonal_tips: z.string(),
 })
 

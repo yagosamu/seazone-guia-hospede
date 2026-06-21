@@ -54,6 +54,8 @@ export const SUBMIT_GUIDE_TOOL: Anthropic.Tool = {
       essentials: {
         type: 'array',
         minItems: 3,
+        maxItems: 3,
+        description: 'Exatamente 3 essenciais: 1 farmácia, 1 supermercado/mercado, 1 hospital/posto de saúde.',
         items: {
           type: 'object',
           properties: {

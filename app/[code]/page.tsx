@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { AccessSection } from '@/components/organisms/AccessSection'
+import { TranslatedAccessSection } from '@/components/organisms/TranslatedAccessSection'
 import { ChatWidget } from '@/components/organisms/ChatWidget'
 import { ContactSection } from '@/components/organisms/ContactSection'
 import { NeighborhoodLoader } from '@/components/organisms/NeighborhoodLoader'
@@ -55,7 +55,7 @@ export default async function PropertyPage({ params }: PageProps) {
       </SectionBand>
 
       <SectionBand tone="paper">
-        <AccessSection property={property} />
+        <TranslatedAccessSection property={property} />
       </SectionBand>
 
       <SectionBand tone="sky">

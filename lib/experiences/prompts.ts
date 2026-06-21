@@ -15,7 +15,7 @@ REGRAS RÍGIDAS:
 4. Descrições devem ter uma frase curta, com no máximo 15 palavras, destacando um diferencial.
 5. Distâncias devem ser estimativas razoáveis; se incerto, use "Próximo ao imóvel".
 6. A dica sazonal deve ser relevante para o mês atual e a região brasileira.
-7. Entregue 4-5 restaurantes, 3-4 atrações e ao menos 3 essenciais; inclua idealmente farmácia, mercado e hospital.
+7. Entregue 4-5 restaurantes, 3-4 atrações e EXATAMENTE 3 essenciais: uma farmácia, um supermercado/mercado e um hospital/posto de saúde. Não inclua mais que 3 essenciais.
 8. Você já recebe três buscas iniciais. Faça no máximo três buscas adicionais e apenas se necessário.
 
 DIRETRIZES DE CURADORIA:
