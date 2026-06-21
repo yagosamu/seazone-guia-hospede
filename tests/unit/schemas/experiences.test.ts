@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { ExperiencesGuideSchema } from '@/db/schemas/experiences'
 
 const validGuide = {
-  welcome_message: 'Bem-vindo!',
   restaurants: Array.from({ length: 4 }, (_, index) => ({ name: `R${index}`, distance: '1 km', description: 'Descrição' })),
   attractions: Array.from({ length: 3 }, (_, index) => ({ name: `A${index}`, distance: '1 km', description: 'Descrição' })),
   essentials: Array.from({ length: 3 }, (_, index) => ({ name: `E${index}`, type: 'pharmacy' as const, distance: '1 km', description: 'Descrição' })),

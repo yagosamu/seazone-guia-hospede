@@ -40,7 +40,7 @@ describe('database query helpers', () => {
   it('uppercases the code when saving a guide', async () => {
     dbMocks.updateWhere.mockResolvedValueOnce(undefined)
     await saveExperiencesGuide('fln001', {
-      welcome_message: 'Olá', restaurants: [], attractions: [], essentials: [], seasonal_tips: 'Dica',
+      restaurants: [], attractions: [], essentials: [], seasonal_tips: 'Dica',
     })
     expect(dbMocks.update).toHaveBeenCalled()
     expect(dbMocks.updateWhere).toHaveBeenCalled()

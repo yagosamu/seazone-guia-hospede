@@ -8,6 +8,8 @@ import { buildSystemPrompt } from '@/lib/chat/prompt'
 function propertyFromFixture(fixture: typeof FLN001 | typeof GRM001): Property {
   return {
     ...fixture,
+    welcome_message: null,
+    welcome_generated_at: null,
     experiences_guide: null,
     experiences_generated_at: null,
     created_at: new Date(),
@@ -16,7 +18,6 @@ function propertyFromFixture(fixture: typeof FLN001 | typeof GRM001): Property {
 }
 
 const guide: ExperiencesGuide = {
-  welcome_message: 'Olá',
   restaurants: ['Moochacho Burritos', 'R2', 'R3', 'R4'].map((name) => ({ name, distance: '1 km', description: 'Descrição' })),
   attractions: ['A1', 'A2', 'A3'].map((name) => ({ name, distance: '1 km', description: 'Descrição' })),
   essentials: ['E1', 'E2', 'E3'].map((name) => ({ name, type: 'pharmacy' as const, distance: '1 km', description: 'Descrição' })),

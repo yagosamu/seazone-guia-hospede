@@ -16,6 +16,8 @@ export const properties = pgTable('properties', {
   amenities: jsonb('amenities').$type<Amenities>().notNull(),
   host: jsonb('host').$type<Host>().notNull(),
   images: text('images').array().notNull().default(sql`ARRAY[]::text[]`),
+  welcome_message: text('welcome_message'),
+  welcome_generated_at: timestamp('welcome_generated_at'),
   experiences_guide: jsonb('experiences_guide').$type<ExperiencesGuide>(),
   experiences_generated_at: timestamp('experiences_generated_at'),
   created_at: timestamp('created_at').notNull().defaultNow(),

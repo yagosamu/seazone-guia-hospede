@@ -14,7 +14,7 @@ const request = (body: unknown) => new Request('http://localhost/api/generate-gu
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
 })
 
-const guide = { welcome_message: 'Olá', restaurants: [], attractions: [], essentials: [], seasonal_tips: 'Dica' }
+const guide = { restaurants: [], attractions: [], essentials: [], seasonal_tips: 'Dica' }
 
 describe('POST /api/generate-guide', () => {
   beforeEach(() => Object.values(apiMocks).forEach((mock) => mock.mockReset()))

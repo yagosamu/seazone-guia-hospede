@@ -1,4 +1,8 @@
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Property } from '@/db/schema'
 
 const ACCESS_LABELS: Record<string, string> = {
@@ -9,30 +13,77 @@ const ACCESS_LABELS: Record<string, string> = {
   other: 'Outro acesso',
 }
 
+const AUTOPLAY_INTERVAL = 6000
+
 type PropertyHeroProps = {
   property: Property
-  welcomeMessage?: string | null
 }
 
-export function PropertyHero({ property, welcomeMessage }: PropertyHeroProps) {
-  const image = property.images[0]
+export function PropertyHero({ property }: PropertyHeroProps) {
+  const images = property.images
+  const total = images.length
+  const [activeIdx, setActiveIdx] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const touchStartX = useRef<number | null>(null)
+
   const access = property.operational.is_self_checkin
     ? 'Self check-in'
     : (ACCESS_LABELS[property.operational.property_access_type] ?? 'Acesso ao imóvel')
 
+  const goPrev = useCallback(
+    () => setActiveIdx((i) => (i - 1 + total) % total),
+    [total],
+  )
+  const goNext = useCallback(() => setActiveIdx((i) => (i + 1) % total), [total])
+
+  useEffect(() => {
+    if (total <= 1 || paused) return
+    const id = setInterval(() => setActiveIdx((i) => (i + 1) % total), AUTOPLAY_INTERVAL)
+    return () => clearInterval(id)
+  }, [total, paused])
+
+  function onTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0]?.clientX ?? null
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = touchStartX.current
+    const end = e.changedTouches[0]?.clientX ?? null
+    if (start === null || end === null) return
+    const diff = end - start
+    if (Math.abs(diff) > 50) {
+      if (diff < 0) goNext()
+      else goPrev()
+    }
+    touchStartX.current = null
+  }
+
   return (
     <section className="relative w-full">
-      <div className="relative h-[60vh] min-h-[420px] w-full overflow-hidden md:h-[72vh] md:min-h-[520px]">
-        {image ? (
-          <Image
-            src={image}
-            alt={property.name}
-            fill
-            priority
-            className="object-cover"
-            sizes="100vw"
-          />
-        ) : null}
+      <div
+        className="relative h-[60vh] min-h-[420px] w-full overflow-hidden md:h-[72vh] md:min-h-[520px]"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        {images.map((src, i) => (
+          <div
+            key={src}
+            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+            style={{ opacity: i === activeIdx ? 1 : 0 }}
+            aria-hidden={i === activeIdx ? 'false' : 'true'}
+          >
+            <Image
+              src={src}
+              alt={`${property.name} foto ${i + 1}`}
+              fill
+              priority={i === 0}
+              className="object-cover"
+              sizes="100vw"
+            />
+          </div>
+        ))}
+
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -49,6 +100,28 @@ export function PropertyHero({ property, welcomeMessage }: PropertyHeroProps) {
           }}
           aria-hidden="true"
         />
+
+        {total > 1 ? (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label="Foto anterior"
+              className="absolute top-1/2 left-3 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/15 p-2.5 text-white backdrop-blur-sm transition hover:bg-white/30 md:left-6 md:flex"
+            >
+              <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label="Próxima foto"
+              className="absolute top-1/2 right-3 hidden -translate-y-1/2 items-center justify-center rounded-full bg-white/15 p-2.5 text-white backdrop-blur-sm transition hover:bg-white/30 md:right-6 md:flex"
+            >
+              <ChevronRight className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </>
+        ) : null}
+
         <div className="absolute inset-x-0 bottom-0">
           <div className="mx-auto max-w-6xl px-6 pb-10 md:px-10 md:pb-16">
             <div className="max-w-3xl text-[#FAFAF7]">
@@ -79,12 +152,27 @@ export function PropertyHero({ property, welcomeMessage }: PropertyHeroProps) {
                 <span className="mx-2 opacity-50">·</span>
                 <span className="opacity-90">{property.address.state}</span>
               </p>
-              {welcomeMessage ? (
-                <p className="mt-6 max-w-2xl text-sm leading-relaxed opacity-95 md:text-base md:leading-[1.7]">
-                  {welcomeMessage}
-                </p>
-              ) : null}
             </div>
+
+            {total > 1 ? (
+              <div className="mt-6 flex items-center gap-2" role="tablist" aria-label="Navegação de fotos">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === activeIdx}
+                    aria-label={`Foto ${i + 1} de ${total}`}
+                    onClick={() => setActiveIdx(i)}
+                    className="h-1.5 rounded-full transition-all"
+                    style={{
+                      width: i === activeIdx ? 24 : 8,
+                      background: i === activeIdx ? '#FF6B5B' : 'rgba(255,255,255,0.55)',
+                    }}
+                  />
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

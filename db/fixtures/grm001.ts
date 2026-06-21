@@ -44,6 +44,12 @@ export const GRM001: NewProperty = {
     balcony: true,
     dishwasher: true,
   },
-  images: ['https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=800'],
+  images: [
+    'https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=1600&q=80',
+    'https://images.unsplash.com/photo-1518733057094-95b53143d2a7?w=1200&q=80',
+    'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=80',
+    'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200&q=80',
+    'https://images.unsplash.com/photo-1571508601891-ca5e7a713859?w=1200&q=80',
+  ],
   host: { name: 'Carlos Eduardo', phone: '+5554998765432' },
 }

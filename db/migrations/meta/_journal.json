@@ -8,6 +8,13 @@
       "when": 1781903612505,
       "tag": "0000_easy_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782043721526,
+      "tag": "0001_premium_centennial",
+      "breakpoints": true
     }
   ]
 }

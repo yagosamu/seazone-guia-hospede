@@ -8,6 +8,8 @@ import { NeighborhoodSection } from '@/components/organisms/NeighborhoodSection'
 import { PropertyHero } from '@/components/organisms/PropertyHero'
 import { PropertyOverview } from '@/components/organisms/PropertyOverview'
 import { RulesSection } from '@/components/organisms/RulesSection'
+import { WelcomeLoader } from '@/components/organisms/WelcomeLoader'
+import { WelcomeSection } from '@/components/organisms/WelcomeSection'
 import { getPropertyByCode } from '@/db/queries'
 
 type PageProps = { params: Promise<{ code: string }> }
@@ -32,24 +34,33 @@ export default async function PropertyPage({ params }: PageProps) {
   if (!property) notFound()
 
   const guide = property.experiences_guide ?? null
+  const welcome = property.welcome_message ?? null
 
   return (
     <main className="flex flex-col">
-      <PropertyHero property={property} welcomeMessage={guide?.welcome_message} />
+      <PropertyHero property={property} />
 
       <SectionBand tone="paper">
+        {welcome ? (
+          <WelcomeSection message={welcome} />
+        ) : (
+          <WelcomeLoader code={property.code} />
+        )}
+      </SectionBand>
+
+      <SectionBand tone="sky">
         <PropertyOverview property={property} />
       </SectionBand>
 
-      <SectionBand tone="sky">
+      <SectionBand tone="paper">
         <AccessSection property={property} />
       </SectionBand>
 
-      <SectionBand tone="paper">
+      <SectionBand tone="sky">
         <RulesSection property={property} />
       </SectionBand>
 
-      <SectionBand tone="sky">
+      <SectionBand tone="paper">
         {guide ? (
           <NeighborhoodSection guide={guide} sectionNumber="04" />
         ) : (
@@ -57,7 +68,7 @@ export default async function PropertyPage({ params }: PageProps) {
         )}
       </SectionBand>
 
-      <SectionBand tone="paper">
+      <SectionBand tone="sky">
         <ContactSection property={property} sectionNumber="05" />
       </SectionBand>
 

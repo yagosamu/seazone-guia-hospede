@@ -13,10 +13,9 @@ REGRAS RÍGIDAS:
 3. Restaurantes devem ser estabelecimentos claramente de alimentação; nunca inclua farmácias, mercados, hospitais ou serviços nessa categoria.
 4. Descrições devem ter uma frase curta, com no máximo 15 palavras, destacando um diferencial.
 5. Distâncias devem ser estimativas razoáveis; se incerto, use "Próximo ao imóvel".
-6. A mensagem de boas-vindas deve ter 2-3 frases, mencionar o bairro e uma característica local.
-7. A dica sazonal deve ser relevante para o mês atual e a região brasileira.
-8. Entregue 4-5 restaurantes, 3-4 atrações e ao menos 3 essenciais; inclua idealmente farmácia, mercado e hospital.
-9. Você já recebe três buscas iniciais. Faça no máximo três buscas adicionais e apenas se necessário.
+6. A dica sazonal deve ser relevante para o mês atual e a região brasileira.
+7. Entregue 4-5 restaurantes, 3-4 atrações e ao menos 3 essenciais; inclua idealmente farmácia, mercado e hospital.
+8. Você já recebe três buscas iniciais. Faça no máximo três buscas adicionais e apenas se necessário.
 
 DIRETRIZES DE CURADORIA:
 - Se a cidade do imóvel é LITORÂNEA (Florianópolis, Balneário Camboriú, Rio de Janeiro, Salvador, Bombinhas, Búzios, Maresias, Ubatuba e similares), ao menos UMA das atrações DEVE ser uma praia famosa da região (ex: Joaquina, Mole, Jurerê em Floripa; Praia Central em BC; Ipanema, Copacabana no Rio), mesmo que não seja a mais próxima geograficamente do imóvel.

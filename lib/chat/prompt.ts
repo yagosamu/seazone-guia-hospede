@@ -16,7 +16,7 @@ export function buildSystemPrompt(context: ChatContext): string {
       }`.trim()
     : 'Não disponível'
   const guideContext = guide
-    ? formatGuideForPrompt(guide)
+    ? formatGuideForPrompt(guide, property.welcome_message)
     : '(O guia de experiências ainda não foi gerado para este imóvel. Se a pergunta for sobre restaurantes, atrações ou serviços próximos, informe que o guia ainda está sendo preparado.)'
 
   return `Você é o assistente virtual do guia digital Seazone para o imóvel ${property.code} (${property.name}).
@@ -85,7 +85,7 @@ R (exemplo de personalização honesta): "O guia lista a Praia da Joaquina, conh
 Lembre: NOMES de lugares apenas do contexto. CARACTERIZAÇÃO desses lugares pode usar conhecimento geral. Se o contexto não cobre, seja honesto e redirecione pro anfitrião.`
 }
 
-function formatGuideForPrompt(guide: ExperiencesGuide): string {
+function formatGuideForPrompt(guide: ExperiencesGuide, welcomeMessage: string | null): string {
   const restaurants = guide.restaurants
     .map((restaurant, index) => `  ${index + 1}. ${restaurant.name} (${restaurant.distance}): ${restaurant.description}`)
     .join('\n')
@@ -96,9 +96,7 @@ function formatGuideForPrompt(guide: ExperiencesGuide): string {
     .map((essential, index) => `  ${index + 1}. ${essential.name} [${essential.type}] (${essential.distance}): ${essential.description}`)
     .join('\n')
 
-  return `Mensagem de boas-vindas: ${guide.welcome_message}
-
-RESTAURANTES PRÓXIMOS:
+  return `${welcomeMessage ? `Mensagem de boas-vindas: ${welcomeMessage}\n\n` : ''}RESTAURANTES PRÓXIMOS:
 ${restaurants}
 
 ATRAÇÕES:

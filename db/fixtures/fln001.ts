@@ -45,6 +45,12 @@ export const FLN001: NewProperty = {
     elevator: true,
     balcony: true,
   },
-  images: ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800'],
+  images: [
+    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1600&q=80',
+    'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=80',
+    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=80',
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=80',
+    'https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=80',
+  ],
   host: { name: 'Ana Paula', phone: '+5548991234567' },
 }

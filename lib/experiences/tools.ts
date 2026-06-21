@@ -23,10 +23,6 @@ export const SUBMIT_GUIDE_TOOL: Anthropic.Tool = {
   input_schema: {
     type: 'object',
     properties: {
-      welcome_message: {
-        type: 'string',
-        description: 'Mensagem calorosa de 2 a 3 frases, citando o bairro e uma característica local.',
-      },
       restaurants: {
         type: 'array',
         minItems: 4,
@@ -77,7 +73,7 @@ export const SUBMIT_GUIDE_TOOL: Anthropic.Tool = {
         description: 'Dica sazonal local para o mês atual, em 2 a 3 frases.',
       },
     },
-    required: ['welcome_message', 'restaurants', 'attractions', 'essentials', 'seasonal_tips'],
+    required: ['restaurants', 'attractions', 'essentials', 'seasonal_tips'],
   },
 }
 

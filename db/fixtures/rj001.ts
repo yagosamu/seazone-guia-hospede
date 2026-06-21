@@ -48,6 +48,12 @@ export const RJ001: NewProperty = {
     gym: true,
     doorman_24h: true,
   },
-  images: ['https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=800'],
+  images: [
+    'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=1600&q=80',
+    'https://images.unsplash.com/photo-1606744824163-985d376605aa?w=1200&q=80',
+    'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200&q=80',
+    'https://images.unsplash.com/photo-1574643156929-51fa098b0394?w=1200&q=80',
+    'https://images.unsplash.com/photo-1565183997392-2f6f122e5912?w=1200&q=80',
+  ],
   host: { name: 'Rafael Mendes', phone: '+5521998887766' },
 }

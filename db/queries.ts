@@ -20,3 +20,14 @@ export async function saveExperiencesGuide(code: string, guide: ExperiencesGuide
     })
     .where(eq(properties.code, code.toUpperCase()))
 }
+
+export async function saveWelcomeMessage(code: string, message: string): Promise<void> {
+  await db
+    .update(properties)
+    .set({
+      welcome_message: message,
+      welcome_generated_at: new Date(),
+      updated_at: new Date(),
+    })
+    .where(eq(properties.code, code.toUpperCase()))
+}
