@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, type ReactNode } from 'react'
 import { Sparkles } from 'lucide-react'
 import { interpolate, useT } from '@/lib/i18n/provider'
-import type { ExperiencesGuide } from '@/db/schemas/experiences'
+import { cn } from '@/lib/utils'
+import type { Attraction, Essential, ExperiencesGuide, Restaurant } from '@/db/schemas/experiences'
 import { SectionHeader } from '@/components/atoms/SectionHeader'
 import { PlaceTypeBadge } from '@/components/atoms/PlaceTypeBadge'
 import { PlaceCard } from '@/components/molecules/PlaceCard'
@@ -14,8 +16,11 @@ type NeighborhoodSectionProps = {
   code: string
 }
 
+const VISIBLE_ON_MOBILE = 2
+
 export function NeighborhoodSection({ guide, sectionNumber, code }: NeighborhoodSectionProps) {
   const t = useT()
+
   return (
     <section className="space-y-10">
       <SectionHeader
@@ -25,47 +30,56 @@ export function NeighborhoodSection({ guide, sectionNumber, code }: Neighborhood
         description={t.neighborhood.description}
       />
 
-      <SubSection title={t.neighborhood.restaurants} subtitle={interpolate(t.neighborhood.selected, { n: guide.restaurants.length })}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-          {guide.restaurants.map((r, idx) => (
+      <SubSection
+        title={t.neighborhood.restaurants}
+        subtitle={interpolate(t.neighborhood.selected, { n: guide.restaurants.length })}
+      >
+        <CardListWithToggle
+          items={guide.restaurants}
+          gridClass="grid gap-4 md:grid-cols-2 lg:grid-cols-2"
+          renderCard={(r, idx) => (
             <PlaceCard
-              key={r.name}
               index={idx + 1}
               name={r.name}
               distance={r.distance}
               description={r.description}
             />
-          ))}
-        </div>
+          )}
+        />
       </SubSection>
 
-      <SubSection title={t.neighborhood.attractions} subtitle={interpolate(t.neighborhood.points, { n: guide.attractions.length })}>
-        <div className="grid gap-4 md:grid-cols-2">
-          {guide.attractions.map((a, idx) => (
+      <SubSection
+        title={t.neighborhood.attractions}
+        subtitle={interpolate(t.neighborhood.points, { n: guide.attractions.length })}
+      >
+        <CardListWithToggle
+          items={guide.attractions}
+          gridClass="grid gap-4 md:grid-cols-2"
+          renderCard={(a, idx) => (
             <PlaceCard
-              key={a.name}
               index={idx + 1}
               name={a.name}
               distance={a.distance}
               description={a.description}
             />
-          ))}
-        </div>
+          )}
+        />
       </SubSection>
 
       <SubSection title={t.neighborhood.essentials} subtitle={t.neighborhood.essentialSubtitle}>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {guide.essentials.map((e, idx) => (
+        <CardListWithToggle
+          items={guide.essentials}
+          gridClass="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          renderCard={(e, idx) => (
             <PlaceCard
-              key={e.name}
               index={idx + 1}
               name={e.name}
               distance={e.distance}
               description={e.description}
               badge={<PlaceTypeBadge type={e.type} />}
             />
-          ))}
-        </div>
+          )}
+        />
       </SubSection>
 
       <aside
@@ -96,7 +110,9 @@ export function NeighborhoodSection({ guide, sectionNumber, code }: Neighborhood
         </div>
       </aside>
 
-      <div className="flex justify-center pt-1"><ItineraryTrigger code={code} /></div>
+      <div className="flex justify-center pt-1">
+        <ItineraryTrigger code={code} />
+      </div>
     </section>
   )
 }
@@ -108,7 +124,7 @@ function SubSection({
 }: {
   title: string
   subtitle: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
   return (
     <div className="space-y-4">
@@ -119,6 +135,50 @@ function SubSection({
         </span>
       </div>
       {children}
+    </div>
+  )
+}
+
+type ItemBase = Restaurant | Attraction | Essential
+
+function CardListWithToggle<T extends ItemBase>({
+  items,
+  gridClass,
+  renderCard,
+}: {
+  items: T[]
+  gridClass: string
+  renderCard: (item: T, idx: number) => ReactNode
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const t = useT()
+  const hasOverflow = items.length > VISIBLE_ON_MOBILE
+
+  return (
+    <div className="space-y-3">
+      <div className={gridClass}>
+        {items.map((item, i) => (
+          <div
+            key={item.name}
+            className={cn(i >= VISIBLE_ON_MOBILE && !expanded && 'hidden md:block')}
+          >
+            {renderCard(item, i)}
+          </div>
+        ))}
+      </div>
+      {hasOverflow ? (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          aria-expanded={expanded}
+          className="mx-auto mt-1 inline-flex items-center gap-2 rounded-full px-5 py-2 text-[11px] font-semibold tracking-[0.12em] uppercase transition hover:brightness-110 md:hidden"
+          style={{ border: '1px solid var(--seazone-blue)', color: 'var(--seazone-blue)' }}
+        >
+          {expanded
+            ? t.common.showLess
+            : interpolate(t.common.showMore, { n: items.length - VISIBLE_ON_MOBILE })}
+        </button>
+      ) : null}
     </div>
   )
 }
