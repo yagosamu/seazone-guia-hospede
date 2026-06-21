@@ -51,11 +51,11 @@ export const BAL001: NewProperty = {
     sea_view: true,
   },
   images: [
-    'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=1600&q=80',
-    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&q=80',
-    'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=80',
-    'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80',
-    'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1200&q=80',
+    '/properties/BAL001/01.jpg',
+    '/properties/BAL001/02.jpg',
+    '/properties/BAL001/03.jpg',
+    '/properties/BAL001/04.jpg',
+    '/properties/BAL001/05.jpg',
   ],
   host: { name: 'Mariana Schmitt', phone: '+5547998765432' },
 }
