@@ -5,6 +5,7 @@ import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport, type UIMessage } from 'ai'
 import { ArrowUp, MessageCircle, Sparkles, X } from 'lucide-react'
 import { interpolate, useI18n, useT } from '@/lib/i18n/provider'
+import { ItineraryModal } from './ItineraryModal'
 
 type ChatWidgetProps = {
   code: string
@@ -20,6 +21,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
     { id: 'wifi', label: t.chat.wifi, prompt: t.chat.wifi }, { id: 'checkin', label: t.chat.checkin, prompt: t.chat.checkin }, { id: 'pet', label: t.chat.pet, prompt: t.chat.pet }, { id: 'food', label: t.chat.food, prompt: t.chat.food },
   ]
   const [open, setOpen] = useState(false)
+  const [itineraryOpen, setItineraryOpen] = useState(false)
   const [input, setInput] = useState('')
   const titleId = useId()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -135,6 +137,7 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
                 <EmptyState
                   suggestions={suggestions}
                   onPick={(prompt) => handleSubmit(prompt)}
+                  onOpenItinerary={() => setItineraryOpen(true)}
                 />
               ) : (
                 <div className="space-y-4">
@@ -219,6 +222,10 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
           </div>
         </div>
       ) : null}
+
+      {itineraryOpen ? (
+        <ItineraryModal code={code} onClose={() => setItineraryOpen(false)} />
+      ) : null}
     </>
   )
 }
@@ -226,9 +233,11 @@ export function ChatWidget({ code, propertyName, hostFirstName }: ChatWidgetProp
 function EmptyState({
   suggestions,
   onPick,
+  onOpenItinerary,
 }: {
   suggestions: Suggestion[]
   onPick: (prompt: string) => void
+  onOpenItinerary: () => void
 }) {
   const t = useT()
   return (
@@ -258,6 +267,15 @@ function EmptyState({
             {s.label}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={onOpenItinerary}
+          className="mt-2 inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold transition hover:brightness-110 active:scale-[0.98]"
+          style={{ background: 'var(--seazone-blue)', color: '#FAFAF7' }}
+        >
+          <Sparkles className="h-4 w-4" aria-hidden="true" />
+          {t.itinerary.modalTitle}
+        </button>
       </div>
     </div>
   )
