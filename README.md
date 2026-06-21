@@ -8,6 +8,24 @@ Acesse `/FLN001`, `/GRM001`, `/BAL001` ou `/RJ001` para ver imóveis de exemplo.
 
 ---
 
+## Índice
+
+- [O problema](#o-problema)
+- [A solução](#a-solução)
+- [Início rápido](#início-rápido)
+- [Arquitetura](#arquitetura)
+- [Stack](#stack)
+- [Funcionalidades](#funcionalidades)
+- [Compliance com requisitos](#compliance-com-requisitos)
+- [Decisões técnicas e trade-offs](#decisões-técnicas-e-trade-offs)
+- [Estratégia anti-alucinação](#estratégia-anti-alucinação)
+- [Testes](#testes)
+- [Estrutura de pastas](#estrutura-de-pastas)
+- [Sobre](#sobre)
+- [Licença](#licença)
+
+---
+
 ## O problema
 
 A Seazone gerencia mais de 3.000 imóveis no Brasil. O guia atual do hóspede é estático e idêntico para todos: um folheto digital genérico. O hóspede em Gramado vê as mesmas informações do hóspede em Florianópolis. Cada imóvel deveria ter um guia próprio, com dados específicos (WiFi, regras, contato) e curadoria contextual da região (restaurantes reais, atrações, dicas sazonais).
