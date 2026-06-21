@@ -66,4 +66,11 @@ describe('buildSystemPrompt anti-hallucination contract', () => {
     expect(spanishPrompt).not.toContain('Em português brasileiro')
     expect(spanishPrompt).toContain('No tengo esa información sobre este alojamiento.')
   })
+
+  it('uses property profiles as a safe chat preference', () => {
+    const prompt = buildSystemPrompt({ property: propertyFromFixture(GRM001), guide: null })
+
+    expect(prompt).toContain('PERFIS ATIVOS DESTE IMÓVEL: mountain')
+    expect(prompt).toContain('Não apresente o perfil como fato ao hóspede')
+  })
 })
