@@ -377,9 +377,4 @@ tests/
 
 A estrutura de commits mostra a progressão da execução em fases nítidas (scaffold → schema → página → IA → chat → testes → polish → features extras). O fluxo de trabalho usou Claude como arquiteto/orquestrador, Codex como executor de código (T1, T2, T4, T6, T8, T10, T11, T13, T14, fixes) e Claude direto nas tarefas visuais (T3.5, T5, T7, T11.6, T15) - combinando design intelligence com velocidade de execução.
 
----
-
-## Licença
-
-Projeto desenvolvido para fins de avaliação técnica. Código aberto, sem restrições de uso.
 
