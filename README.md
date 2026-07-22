@@ -1,6 +1,6 @@
-# Seazone · Guia Digital do Hóspede
+# Guia Digital do Hóspede
 
-Guia digital personalizado por imóvel, com curadoria local gerada por IA e assistente conversacional anti-alucinação. Construído como teste técnico Desenvolvedor Fullstack (AI Builder) para a Seazone.
+Aplicação fullstack de guia digital para propriedades de aluguel por temporada, com curadoria local gerada por IA e assistente conversacional anti-alucinação. Projeto explorando design agêntico com Anthropic Claude, integração com search real-time (Tavily) e guardrails de produção.
 
 **Live demo:** https://seazone-guia-hospede-rho.vercel.app
 
@@ -16,7 +16,6 @@ Acesse `/FLN001`, `/GRM001`, `/BAL001` ou `/RJ001` para ver imóveis de exemplo.
 - [Arquitetura](#arquitetura)
 - [Stack](#stack)
 - [Funcionalidades](#funcionalidades)
-- [Compliance com requisitos](#compliance-com-requisitos)
 - [Decisões técnicas e trade-offs](#decisões-técnicas-e-trade-offs)
 - [Estratégia anti-alucinação](#estratégia-anti-alucinação)
 - [Testes](#testes)
@@ -28,7 +27,7 @@ Acesse `/FLN001`, `/GRM001`, `/BAL001` ou `/RJ001` para ver imóveis de exemplo.
 
 ## O problema
 
-A Seazone gerencia mais de 3.000 imóveis no Brasil. O guia atual do hóspede é estático e idêntico para todos: um folheto digital genérico. O hóspede em Gramado vê as mesmas informações do hóspede em Florianópolis. Cada imóvel deveria ter um guia próprio, com dados específicos (WiFi, regras, contato) e curadoria contextual da região (restaurantes reais, atrações, dicas sazonais).
+Gestoras de aluguel por temporada tipicamente entregam ao hóspede um folheto digital genérico: mesmas informações, sem contexto do lugar. Quem chega num apartamento em Florianópolis recebe o mesmo material que quem chega num chalé em Gramado. Cada imóvel deveria ter um guia próprio, com dados específicos (WiFi, regras, contato) e curadoria contextual da região (restaurantes reais, atrações, dicas sazonais). Este projeto explora como uma camada de IA agêntica pode transformar essa experiência: dados literais do imóvel + curadoria contextual gerada + assistente virtual que não inventa.
 
 ## A solução
 
@@ -87,7 +86,7 @@ Variáveis de ambiente esperadas:
 │ 3. Anthropic agentic loop  │   │    - Property data               │
 │    - tavily_search tool    │   │    - Guide context               │
 │    - submit_guide tool     │   │    - Anti-hallucination rules    │
-│ 4. Zod validate            │   │    - 4 few-shot do PDF           │
+│ 4. Zod validate            │   │    - 4 few-shot examples         │
 │ 5. Save in DB cache        │   │ 3. streamText + smoothStream     │
 └─────────┬──────────────────┘   └──────────┬───────────────────────┘
           │                                 │
@@ -127,7 +126,7 @@ Variáveis de ambiente esperadas:
 | **LLM** | Anthropic Claude Sonnet 4.6 | Melhor qualidade de instruction-following pra anti-hallucination + tool calling robusto. |
 | **Streaming UI** | Vercel AI SDK 6 (`useChat` + `streamText` + `smoothStream`) | SSE out-of-the-box, hook React idiomático, `smoothStream` torna streaming visível e natural. |
 | **Search** | Tavily API | Retorna conteúdo já textualizado (não JSON de Places API). LLM curaror trabalha melhor com texto cru. Free tier suficiente pra demo. |
-| **UI** | Tailwind v4 + shadcn/ui + lucide-react | Tailwind v4 com `@theme inline` permite tokens semânticos (azul/coral Seazone). shadcn copia componentes pro repo, sem fork. |
+| **UI** | Tailwind v4 + shadcn/ui + lucide-react | Tailwind v4 com `@theme inline` permite tokens semânticos (paleta azul/coral). shadcn copia componentes pro repo, sem fork. |
 | **Tipografia** | Manrope (display+body) + JetBrains Mono (códigos) | Manrope tem personalidade sem cair em "AI aesthetics" genérico (Inter). JetBrains Mono pra códigos WiFi/lock. |
 | **Tests** | Vitest + @testing-library | Vitest tem startup rápido, compatível com TS sem config extra, integra com Vite (testes < 2s). |
 
@@ -160,7 +159,7 @@ Chat com streaming token-a-token (`smoothStream` 18ms por palavra) e regras anti
 - Quando pergunta exige personalização que o contexto não cobre, redireciona elegantemente para o anfitrião.
 - Pergunta totalmente fora de escopo: resposta literal de redirect ("Não tenho essa informação sobre este imóvel...").
 
-UI: floating launcher (FAB coral) + drawer right (desktop) ou fullscreen (mobile). Quick suggestions cobrem as 4 perguntas-modelo do PDF (WiFi, pet, check-in, restaurantes). Estados completos: loading dots, streaming visível, error inline com retry.
+UI: floating launcher (FAB coral) + drawer right (desktop) ou fullscreen (mobile). Quick suggestions cobrem as 4 perguntas mais comuns (WiFi, pet, check-in, restaurantes). Estados completos: loading dots, streaming visível, error inline com retry.
 
 ### 4. Idiomas (PT / EN / ES)
 
@@ -168,7 +167,7 @@ Seletor de idioma com UI estática traduzida em 3 dicionários e tradução on-d
 
 ### 5. Roteiro personalizado por IA (`/api/itinerary` + `/api/itinerary/refine`)
 
-Modal estilo Seazone com 5 perguntas (dias, quem viaja, vibe, locomoção, restrições opcionais). Submit → Claude com `submit_itinerary` tool calling → roteiro day-by-day estruturado (manhã/tarde/noite), exibido em cards com **duração estimada** e **distância do imóvel** por atividade. Inclui botão "Copiar texto" pra compartilhar via WhatsApp/notes e botão "Expandir" pra fullscreen no mobile.
+Modal centralizado com 5 perguntas (dias, quem viaja, vibe, locomoção, restrições opcionais). Submit → Claude com `submit_itinerary` tool calling → roteiro day-by-day estruturado (manhã/tarde/noite), exibido em cards com **duração estimada** e **distância do imóvel** por atividade. Inclui botão "Copiar texto" pra compartilhar via WhatsApp/notes e botão "Expandir" pra fullscreen no mobile.
 
 **Refinement multi-turn**: após gerar, o hóspede pode ajustar via campo "Quer ajustar algo?" ("substitua o dia 2 por algo mais cultural", "remova o Snowland, criança tem medo de frio"). Backend recebe histórico + roteiro atual + novo pedido e retorna versão revisada. Limite de 5 refinements por sessão, validador de coerência reaplica todos os guardrails.
 
@@ -194,48 +193,6 @@ Implementado com `hidden md:block` nos itens extras + `useState` local pra toggl
 
 ---
 
-## Compliance com requisitos
-
-Mapeamento explícito de cada validação do briefing (PDF Seazone) e como atendemos.
-
-### Funcionais
-
-| Requisito | Como atendemos | Onde |
-|---|---|---|
-| URL única por imóvel (ex: `/FLN001`) | Rota dinâmica `/[code]` server-rendered, lê do Postgres | [`app/[code]/page.tsx`](app/%5Bcode%5D/page.tsx) |
-| Erro amigável em código inexistente | Componente `not-found.tsx` customizado disparado por `notFound()` | [`app/[code]/not-found.tsx`](app/%5Bcode%5D/not-found.tsx) |
-| Responsivo mobile + desktop | Tailwind mobile-first, breakpoints `md:` e `lg:`, carrossel com swipe | Toda a UI |
-| Fotos do imóvel | Carrossel no hero com autoplay, setas, dots, swipe, pause on hover | [`components/organisms/PropertyHero.tsx`](components/organisms/PropertyHero.tsx) |
-| Dados do imóvel (tipo, capacidade, amenidades) | Seção 01 "Sobre o imóvel" com grid de stats inline + chips de comodidades em ordem padronizada | [`components/organisms/PropertyOverview.tsx`](components/organisms/PropertyOverview.tsx) |
-| Info de acesso (WiFi, smart lock, estacionamento) | Seção 02 com WiFi card destacado em coral, botão copiar senha, render condicional de estacionamento | [`components/organisms/AccessSection.tsx`](components/organisms/AccessSection.tsx) |
-| Regras (check-in/out, pet, fumar, crianças, eventos) | Seção 03 com badges semânticos (teal permitido / coral negado) e copy humano por contexto | [`components/organisms/RulesSection.tsx`](components/organisms/RulesSection.tsx) |
-| Contato (nome + telefone do anfitrião, endereço) | Seção 05 com avatar de iniciais, botão WhatsApp formatado, link Google Maps do endereço | [`components/organisms/ContactSection.tsx`](components/organisms/ContactSection.tsx) |
-| Guia de Experiências contextualizado pelo endereço real | Agente Claude com tool calling Tavily descobre lugares reais da região + welcome separado | [`lib/experiences/generate.ts`](lib/experiences/generate.ts), [`lib/welcome/generate.ts`](lib/welcome/generate.ts) |
-| **Guia persistido, não regenerado a cada acesso** | Colunas `experiences_guide` JSONB + `experiences_generated_at` em `properties`. Cache TTL 30 dias. Cache hit em <50ms (latência DB) | [`db/schema.ts`](db/schema.ts), [`app/api/generate-guide/route.ts`](app/api/generate-guide/route.ts) |
-| **Feedback visual claro durante geração** | `WelcomeLoader` e `NeighborhoodLoader` com spinner, mensagens em estágios temporais ("Personalizando" → "Curando recomendações" → "Finalizando"), skeleton estruturado | [`components/organisms/WelcomeLoader.tsx`](components/organisms/WelcomeLoader.tsx), [`components/organisms/NeighborhoodLoader.tsx`](components/organisms/NeighborhoodLoader.tsx) |
-| Chat em tempo real (streaming) | Vercel AI SDK `streamText` + `smoothStream` (18ms por palavra), texto chega progressivo | [`app/api/chat/route.ts`](app/api/chat/route.ts) |
-| Chat com contexto do imóvel + guide | `buildSystemPrompt` injeta todos os dados do imóvel + guia + welcome + 4 few-shot examples do PDF | [`lib/chat/prompt.ts`](lib/chat/prompt.ts) |
-| **Chat não inventa informações** | Regras anti-hallucination explícitas no system prompt + temperature 0.3 + redirect para anfitrião quando contexto não cobre | [`lib/chat/prompt.ts`](lib/chat/prompt.ts) |
-| 4 perguntas oficiais respondidas corretamente | Tests cobrem WiFi/pet/check-in/restaurantes contra fixtures FLN001 e GRM001 do PDF | [`tests/unit/lib/chat/prompt.test.ts`](tests/unit/lib/chat/prompt.test.ts) |
-| **Diferencial: roteiro personalizado por IA** | Modal com 5 perguntas + Claude com `submit_itinerary` tool + multi-turn refinement + allowlist por cidade + validação de raio | [`app/api/itinerary/route.ts`](app/api/itinerary/route.ts), [`lib/itinerary/iconic-places.ts`](lib/itinerary/iconic-places.ts) |
-| **Diferencial: multilíngue PT/EN/ES com IA-aware** | Toggle de idioma + dicionários + tradução on-demand de conteúdo gerado por Claude + chat responde no idioma | [`lib/i18n/`](lib/i18n), [`app/api/translate/route.ts`](app/api/translate/route.ts) |
-| **Diferencial: variantes de prompt por perfil do imóvel** | Resolver determinístico (`coastal`/`mountain`/`urban`/`rural`) injeta diretrizes contextuais nos prompts de guide e chat | [`lib/property-profiles.ts`](lib/property-profiles.ts) |
-
-### Técnicos
-
-| Requisito | Como atendemos |
-|---|---|
-| Next.js | Next 16 (App Router) com Server Components |
-| TypeScript | strict mode + `noUncheckedIndexedAccess` + `noImplicitOverride` |
-| Tailwind CSS | v4 com `@theme inline` e tokens semânticos (paleta Seazone azul + coral) |
-| Banco de dados | Postgres no Render, Drizzle ORM, schema com JSONB tipado via Zod |
-| Uso de IA (LLM) | Claude Sonnet 4.6 (Anthropic) com tool calling para geração e streaming para chat |
-| Atomic Design | Estrutura `atoms/` (SectionHeader, CopyButton, PlaceTypeBadge) → `molecules/` (AmenityChip, PlaceCard) → `organisms/` (Hero, sections, Chat) |
-| Padrões de commits | Conventional Commits para mudanças estruturais (`feat(api):`, `feat(db):`, `chore:`, `test:`, `redesign:`) e descritivos curtos para polish visual. Histórico mostra a progressão em fases |
-| Testes (diferencial) | 47 testes Vitest em 13 arquivos cobrindo schemas, helpers, queries, prompts (anti-hallucination, idioma e perfil), guardrails do itinerary (allowlist + raio + coerência) e route handlers |
-
----
-
 ## Decisões técnicas e trade-offs
 
 **Drizzle vs Prisma**
@@ -251,7 +208,7 @@ Considerei: (a) JSON puro com retry, (b) tool calling só para o output, (c) ful
 Cache em coluna JSONB do próprio Postgres elimina dependência extra. TTL controlado por `experiences_generated_at`. Para escala (milhares de leituras/min), Redis valeria; nesse escopo, simplicidade > microsegundos.
 
 **Anti-hallucination via prompt vs RAG vs fine-tuning**
-Optei por prompt engineering com regras explícitas + few-shot examples baseados nas respostas-modelo do PDF + temperature 0.3. RAG genuíno (vector store) seria overkill para um contexto pequeno e estático (dados de 1 imóvel cabem em ~1k tokens). Fine-tuning fora de escopo.
+Optei por prompt engineering com regras explícitas + few-shot examples + temperature 0.3. RAG genuíno (vector store) seria overkill para um contexto pequeno e estático (dados de 1 imóvel cabem em ~1k tokens). Fine-tuning fora de escopo.
 
 **Tool calling no chat: descartado**
 Avaliei ferramentas tipo "consultar disponibilidade" ou "calcular distância", mas decidi manter o chat puro de texto: o contexto já é suficiente, e tool calling adicionaria complexidade sem ganho funcional pro escopo.
@@ -268,7 +225,7 @@ Estratégia em camadas, **calibrada por feature** (chat é mais rígido, itinera
 ### Chat
 
 1. **System prompt rígido** com regras numeradas (`lib/chat/prompt.ts`): "Nunca invente nomes de lugares", "Quando não souber, redirecione para o anfitrião".
-2. **Few-shot examples** dinâmicos: 4 exemplos baseados nas perguntas oficiais do PDF, gerados com os dados reais do imóvel atual (`SeaHome_FLN001` / `floripa2024` etc.).
+2. **Few-shot examples** dinâmicos: 4 exemplos baseados nas perguntas mais comuns de hóspedes, gerados com os dados reais do imóvel atual (`SeaHome_FLN001` / `floripa2024` etc.).
 3. **Temperature 0.3** (baixa criatividade, alta aderência ao prompt).
 4. **Contexto verboso**: system prompt injeta todos os dados do imóvel + guide em formato estruturado.
 5. **Caracterização honesta**: Claude pode descrever perfil de lugares do guide (ex: "Joaquina é mais de surf") mas não pode inventar novos. Quando contexto insuficiente, reconhece limitação e redireciona.
@@ -294,7 +251,7 @@ Estratégia em camadas, **calibrada por feature** (chat é mais rígido, itinera
 - **Histórico enviado ao modelo limitado a 4 entries recentes**: reduz overhead sem perder contexto útil.
 - **Mensagens de erro user-friendly**: validações (Zod, coerência, raio) traduzem em texto humano no client, em vez de stack trace.
 
-Validação manual cobre os 4 cenários oficiais do PDF (WiFi, pet, check-in, restaurantes) + redirecionamento honesto em personalização + raio respeitado em walk/car + refinement preservando dia 1 ao trocar dia 2.
+Validação manual cobre os 4 cenários mais comuns (WiFi, pet, check-in, restaurantes) + redirecionamento honesto em personalização + raio respeitado em walk/car + refinement preservando dia 1 ao trocar dia 2.
 
 ---
 
@@ -329,7 +286,7 @@ app/
   api/chat/route.ts            ← POST streaming chat
   api/itinerary/route.ts       ← POST roteiro personalizado com guardrails
   api/translate/route.ts       ← POST tradução on-demand de conteúdo gerado
-  globals.css                  ← tema Seazone (paleta, fonts)
+  globals.css                  ← tema visual (paleta, fonts)
   layout.tsx                   ← Manrope + JetBrains Mono + I18nProvider
 
 components/
@@ -348,7 +305,7 @@ db/
   seed.ts                      ← delete+insert idempotente
   schemas/property.ts          ← Zod: Address, Operational, Rules, Amenities, Host
   schemas/experiences.ts       ← Zod: Restaurant, Attraction, Essential, ExperiencesGuide
-  fixtures/{fln001,grm001,bal001,rj001}.ts  ← dados literais (FLN/GRM do PDF, BAL/RJ próprios)
+  fixtures/{fln001,grm001,bal001,rj001}.ts  ← dados literais de 4 imóveis exemplo
   migrations/                  ← SQL gerado por drizzle-kit (incl. welcome_message column)
 
 lib/
@@ -371,10 +328,12 @@ tests/
 
 ---
 
-## Sobre 
+## Sobre
 
- Este projeto foi feito em ~2 dias como teste técnico, aplicando os mesmos princípios de arquitetura limpa, type safety e design centrado no usuário em uma stack TypeScript + Next.js - área que estou consolidando depois de Job Radar (React/Vite) e dos meus produtos em Python.
+Projeto explorando engenharia de IA aplicada em contexto real: design agêntico com Anthropic Claude, integração com search real-time (Tavily), guardrails de produção calibrados por feature (chat mais rígido, roteiro criativo com validação de raio) e i18n com tradução on-demand de conteúdo gerado.
 
-A estrutura de commits mostra a progressão da execução em fases nítidas (scaffold → schema → página → IA → chat → testes → polish → features extras). O fluxo de trabalho usou Claude como arquiteto/orquestrador, Codex como executor de código (T1, T2, T4, T6, T8, T10, T11, T13, T14, fixes) e Claude direto nas tarefas visuais (T3.5, T5, T7, T11.6, T15) - combinando design intelligence com velocidade de execução.
+Stack escolhida com foco em qualidade técnica: TypeScript strict end-to-end, Zod como single source of truth compartilhado entre validação de API e schema do DB (JSONB tipado via Drizzle), Atomic Design nos componentes, e 47 testes cobrindo schemas, prompts anti-alucinação e route handlers.
+
+A estrutura de commits reflete a progressão em fases nítidas (scaffold → schema → página → IA → chat → testes → polish → features avançadas), servindo como registro do processo de decisão técnica ao longo do desenvolvimento.
 
 
