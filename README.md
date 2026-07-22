@@ -19,7 +19,6 @@ Acesse `/FLN001`, `/GRM001`, `/BAL001` ou `/RJ001` para ver imóveis de exemplo.
 - [Decisões técnicas e trade-offs](#decisões-técnicas-e-trade-offs)
 - [Estratégia anti-alucinação](#estratégia-anti-alucinação)
 - [Testes](#testes)
-- [Estrutura de pastas](#estrutura-de-pastas)
 - [Sobre](#sobre)
 - [Licença](#licença)
 
@@ -195,63 +194,25 @@ Implementado com `hidden md:block` nos itens extras + `useState` local pra toggl
 
 ## Decisões técnicas e trade-offs
 
-**Drizzle vs Prisma**
-Drizzle ganhou pela leveza (sem runtime client), SQL transparente e suporte excelente a JSONB tipado via `.$type<X>()`. Prisma é mais ergonômico em apps tradicionais mas adiciona overhead de runtime + binding generation que não justifica no escopo.
-
-**Tavily vs Google Places API**
-Tavily retorna conteúdo já textualizado (descrição de páginas, snippets) que o LLM consome diretamente. Places API exige acoplar geocoding + place_id + chamadas separadas pra reviews. Pra curadoria via LLM (que precisa de contexto narrativo), Tavily é mais ergonômico. Trade-off: Places teria coordenadas precisas; Tavily depende de estimativa do LLM pra distâncias (mitigado por instrução clara no prompt).
-
-**Full agentic vs JSON puro (generate-guide)**
-Considerei: (a) JSON puro com retry, (b) tool calling só para o output, (c) full agentic com `tavily_search` + `submit_guide`. Optei por (c) porque demonstra design agêntico real (Claude decide se precisa buscar mais) e o tool calling enforça o schema de saída no nível do SDK. O pre-fetch evita o custo de Claude descobrir buscas básicas do zero, e o limite de 8 iterações previne loop infinito. Resultado prático: 2 iterações, 1-2 buscas complementares, ~45s na primeira geração e cache hit subsequente.
-
-**Cache no DB vs Redis**
-Cache em coluna JSONB do próprio Postgres elimina dependência extra. TTL controlado por `experiences_generated_at`. Para escala (milhares de leituras/min), Redis valeria; nesse escopo, simplicidade > microsegundos.
-
-**Anti-hallucination via prompt vs RAG vs fine-tuning**
-Optei por prompt engineering com regras explícitas + few-shot examples + temperature 0.3. RAG genuíno (vector store) seria overkill para um contexto pequeno e estático (dados de 1 imóvel cabem em ~1k tokens). Fine-tuning fora de escopo.
-
-**Tool calling no chat: descartado**
-Avaliei ferramentas tipo "consultar disponibilidade" ou "calcular distância", mas decidi manter o chat puro de texto: o contexto já é suficiente, e tool calling adicionaria complexidade sem ganho funcional pro escopo.
-
-**Single chat endpoint vs sessões persistidas**
-Sem persistência de conversa (chat reseta ao fechar). Para o caso de uso (perguntas pontuais de um hóspede em estadia), isso é adequado. Persistir conversas seria fácil (uma tabela `chat_messages` + Drizzle), mas adicionaria escopo de moderação, exclusão LGPD, etc.
+- **Drizzle > Prisma**: leveza (sem runtime client), SQL transparente e JSONB tipado via `.$type<X>()`. Prisma agregaria overhead de runtime + binding generation sem ganho no escopo.
+- **Tavily > Google Places**: retorna conteúdo já textualizado que o LLM consome direto. Places exigiria acoplar geocoding + place_id + reviews em chamadas separadas. Trade-off aceito: distâncias estimadas pelo LLM em vez de geocoded.
+- **Full agentic (tool calling) para guide**: tool calling enforça schema no nível do SDK e permite Claude complementar buscas. Pre-fetch de 3 queries paralelas evita descoberta desnecessária, limite de 8 iterações previne loop. Resultado: 2 iterações típicas, ~45s primeira geração + cache 30 dias.
+- **Cache no Postgres > Redis**: JSONB no próprio DB elimina dependência extra. TTL controlado por timestamp. Redis valeria em escala real; nesse escopo, simplicidade > microsegundos.
+- **Prompt engineering > RAG/fine-tuning**: contexto pequeno (~1k tokens por imóvel) não justifica vector store. Fine-tuning fora de escopo.
+- **Chat sem tool calling**: contexto injetado no system prompt é suficiente. Tool calling adicionaria complexidade sem ganho funcional.
+- **Chat sem persistência**: sessão in-memory reseta ao fechar. Persistir exigiria moderação, exclusão LGPD, etc. Adequado ao caso de uso (perguntas pontuais durante estadia).
 
 ---
 
 ## Estratégia anti-alucinação
 
-Estratégia em camadas, **calibrada por feature** (chat é mais rígido, itinerary é criativo mas com guardrails).
+Estratégia em camadas, **calibrada por feature**: chat mais rígido, guide agêntico com schema enforcement, itinerary criativo mas com validador pós-LLM.
 
-### Chat
+**Chat** — Sistema prompt rígido com regras numeradas + few-shot dinâmico (dados reais do imóvel atual) + temperature 0.3 + contexto verboso injetado. Claude pode caracterizar lugares do guide com conhecimento geral, mas não inventa novos; quando insuficiente, redireciona ao anfitrião.
 
-1. **System prompt rígido** com regras numeradas (`lib/chat/prompt.ts`): "Nunca invente nomes de lugares", "Quando não souber, redirecione para o anfitrião".
-2. **Few-shot examples** dinâmicos: 4 exemplos baseados nas perguntas mais comuns de hóspedes, gerados com os dados reais do imóvel atual (`SeaHome_FLN001` / `floripa2024` etc.).
-3. **Temperature 0.3** (baixa criatividade, alta aderência ao prompt).
-4. **Contexto verboso**: system prompt injeta todos os dados do imóvel + guide em formato estruturado.
-5. **Caracterização honesta**: Claude pode descrever perfil de lugares do guide (ex: "Joaquina é mais de surf") mas não pode inventar novos. Quando contexto insuficiente, reconhece limitação e redireciona.
+**Guide generation** — Tool calling enforça schema no nível do SDK (não há "JSON quebrado"). Restrições de curadoria no prompt (cidade litorânea precisa praia famosa, sem instituições acadêmicas, sem clichês de IA). Variantes por perfil (`coastal`/`mountain`/`urban`/`rural`) priorizam recomendações contextuais.
 
-### Guide generation (agente)
-
-- **Tool calling enforça schema** no nível do SDK (não há "JSON quebrado").
-- **Restrições de curadoria** no system prompt: cidade litorânea precisa ao menos uma praia famosa; não recomendar instituições puramente acadêmicas; sem clichês de IA.
-- **Variantes por perfil**: prompt adicional baseado no profile resolver (`coastal`/`mountain`/`urban`/`rural`) prioriza recomendações sem autorizar inventar fatos.
-
-### Itinerary planner (criativo, mas validado)
-
-- **Allowlist de ícones por cidade** (`cardinal` + `byVibe`): Claude só pode mencionar nomes do guide cacheado ou dessa allowlist. Fora disso, tipos genéricos.
-- **Validador heurístico pós-LLM**: para `transport=walk` rejeita distância > 1,5 km ou tempo > 20 min; para `car` rejeita > 20 km / > 30 min.
-- **Validação de coerência**: dias sequenciais, `from_guide: true` referenciando lugar real do guide.
-- **Profile-aware**: mesmo resolver do guide aplica restrições contextuais.
-- **Refinement preserva guardrails**: o `/api/itinerary/refine` reaplica TODAS as validações no output revisado. Numeração 1..N, todos os dias presentes, `from_guide` consistente, raio respeitado.
-
-### Itinerary refinement (multi-turn com memória)
-
-- **Estado da conversa só no client**: roteiro + histórico de pedidos vivem em React state, não persistem.
-- **Limite de 5 refinements por sessão**: prevê custos descontrolados; backend retorna 429 se excedido.
-- **Histórico enviado ao modelo limitado a 4 entries recentes**: reduz overhead sem perder contexto útil.
-- **Mensagens de erro user-friendly**: validações (Zod, coerência, raio) traduzem em texto humano no client, em vez de stack trace.
-
-Validação manual cobre os 4 cenários mais comuns (WiFi, pet, check-in, restaurantes) + redirecionamento honesto em personalização + raio respeitado em walk/car + refinement preservando dia 1 ao trocar dia 2.
+**Itinerary planner** — Allowlist de ícones por cidade (`cardinal` + `byVibe`); fora disso Claude usa tipos genéricos. Validador pós-LLM verifica raio por transporte, dias sequenciais e `from_guide` referenciando lugar real. Refinement multi-turn reaplica todos os guardrails, mantém estado só no client (limite de 5 turnos, backend retorna 429 se excedido) e traduz erros em mensagens user-friendly.
 
 ---
 
@@ -271,60 +232,6 @@ npm test
 - **Route handlers** (`tests/integration/api/`): generate-guide com mock de Anthropic/Tavily (404, cache hit, force regenerate, body inválido). Chat com mock de streamText. Itinerary com mock de Claude e validação completa do output.
 
 Mocks somente nas boundaries externas (Drizzle pool, Anthropic SDK, Tavily fetch). Schemas, helpers e prompts rodam com implementação real. Nenhum teste chama API externa, toda a suíte roda offline.
-
----
-
-## Estrutura de pastas
-
-```
-app/
-  [code]/page.tsx              ← server component, fetch property + render
-  [code]/not-found.tsx         ← 404 customizado i18n-aware
-  [code]/loading.tsx           ← skeleton
-  api/generate-welcome/route.ts ← POST welcome message rápido (~5s)
-  api/generate-guide/route.ts  ← POST agentic (tool calling Tavily, ~45s)
-  api/chat/route.ts            ← POST streaming chat
-  api/itinerary/route.ts       ← POST roteiro personalizado com guardrails
-  api/translate/route.ts       ← POST tradução on-demand de conteúdo gerado
-  globals.css                  ← tema visual (paleta, fonts)
-  layout.tsx                   ← Manrope + JetBrains Mono + I18nProvider
-
-components/
-  atoms/                       ← primitivos (SectionHeader, PlaceTypeBadge, CopyButton, LanguageSwitcher)
-  molecules/                   ← compostos (AmenityChip, PlaceCard, ItineraryDayCard)
-  organisms/                   ← seções completas (Hero, Overview, Access, Rules, Contact,
-                                 NeighborhoodSection, NeighborhoodLoader, WelcomeSection,
-                                 WelcomeLoader, ChatWidget, ItineraryTrigger, ItineraryModal,
-                                 TranslatedWelcomeSection, TranslatedNeighborhoodSection)
-  ui/                          ← shadcn (button, card, badge, skeleton, input)
-
-db/
-  schema.ts                    ← tabela properties (Drizzle) + welcome_message
-  client.ts                    ← pool singleton + SSL pra Render
-  queries.ts                   ← getPropertyByCode + saveExperiencesGuide + saveWelcomeMessage
-  seed.ts                      ← delete+insert idempotente
-  schemas/property.ts          ← Zod: Address, Operational, Rules, Amenities, Host
-  schemas/experiences.ts       ← Zod: Restaurant, Attraction, Essential, ExperiencesGuide
-  fixtures/{fln001,grm001,bal001,rj001}.ts  ← dados literais de 4 imóveis exemplo
-  migrations/                  ← SQL gerado por drizzle-kit (incl. welcome_message column)
-
-lib/
-  anthropic.ts                 ← cliente Anthropic singleton
-  tavily.ts                    ← fetch wrapper com timeout
-  property-profiles.ts         ← resolver determinístico de perfil (coastal/mountain/urban/rural)
-  welcome/                     ← geração de welcome message (~5s, sem Tavily)
-  experiences/                 ← geração agêntica do guide (tools, prompts, errors, generate)
-  chat/                        ← context loader + system prompt builder locale-aware
-  itinerary/                   ← planner: types, schema, tool, prompt, allowlist, validação, generate
-  i18n/                        ← provider, dicionários PT/EN/ES, cookies, hooks
-  amenities.ts                 ← mapping amenity key → ícone lucide (label vem do dict)
-  format.ts                    ← formatAddress, whatsappUrl, googleMapsUrl
-  utils.ts                     ← cn helper do shadcn
-
-tests/
-  unit/                        ← schemas, helpers, prompts (chat + itinerary), queries
-  integration/                 ← route handlers com mocks (generate-guide, chat, itinerary)
-```
 
 ---
 
